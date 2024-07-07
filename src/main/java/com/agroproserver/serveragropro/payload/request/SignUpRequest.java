@@ -1,5 +1,7 @@
 package com.agroproserver.serveragropro.payload.request;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -16,6 +18,18 @@ public class SignUpRequest {
 
     @NotBlank
     @Size(min = 3, max = 20)
+    private String nombre;
+
+    @NotBlank
+    @Size(min = 3, max = 20)
+    private String apellido1;
+
+    @NotBlank
+    @Size(min = 3, max = 20)
+    private String apellido2;
+    
+    @NotBlank
+    @Size(min = 3, max = 20)
     private String username;
 
     @NotBlank
@@ -26,5 +40,7 @@ public class SignUpRequest {
     @Size(max = 50)
     @Email
     private String email;
+
+    private String rol;
 
 }

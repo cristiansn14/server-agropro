@@ -1,18 +1,19 @@
 package com.agroproserver.serveragropro.model;
 
-import java.security.Timestamp;
-import java.util.HashSet;
+import java.sql.Timestamp;
+import java.util.Set;
 import java.util.UUID;
-
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -27,7 +28,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "usuario", uniqueConstraints = { @UniqueConstraint(columnNames = "USUARIO"), @UniqueConstraint(columnNames = "CORREO") })
+@Table(name = "usuario", uniqueConstraints = { @UniqueConstraint(columnNames = "USUARIO"), @UniqueConstraint(columnNames = "EMAIL") })
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -36,7 +37,7 @@ import lombok.ToString;
 public class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID")
     private UUID id;
 
@@ -60,7 +61,6 @@ public class Usuario {
     @Size(max = 50)
     @Email
     @Column(name = "EMAIL")
-    @NotNull
     private String email;
 
     @Size(max = 9)
@@ -78,8 +78,7 @@ public class Usuario {
 
     @NotBlank
     @Size(max = 20)
-    @Column(name = "USUARIO", unique = true)
-    @NotNull
+    @Column(name = "USUARIO")
     private String username;
 
     @NotBlank
@@ -88,11 +87,7 @@ public class Usuario {
     @NotNull
     private String password;   
 
-    @ColumnDefault("false")
-    private boolean superUsuario;
-
-    @NotBlank
-    @CreationTimestamp
+    @NotNull
     @Column(name = "FECHA_ALTA")
     private Timestamp fechaAlta;
 
@@ -100,11 +95,18 @@ public class Usuario {
     private Timestamp fechaBaja;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private HashSet<UsuarioFinca> usuarioFincas;
+    private Set<UsuarioFinca> usuarioFincas;
 
-    public Usuario (String username, String password, String email) {
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(  name = "usuario_roles", joinColumns = @JoinColumn(name = "ID_USUARIO"), inverseJoinColumns = @JoinColumn(name = "ID_ROL"))
+    private Set<Rol> roles;
+
+    public Usuario (String username, String password, String email, String nombre, String apellido1, String apellido2) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.nombre = nombre;
+        this.apellido1 = apellido1;
+        this.apellido2 = apellido2;
     }
 }

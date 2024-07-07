@@ -1,11 +1,8 @@
 package com.agroproserver.serveragropro.model;
-import java.security.Timestamp;
-import java.util.HashSet;
+
+import java.sql.Timestamp;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,9 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -33,9 +28,10 @@ import lombok.NoArgsConstructor;
 public class Finca {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @NotNull
     @Column(name = "ONZAS")
     private long onzas;
 
@@ -44,26 +40,35 @@ public class Finca {
     @NotNull
     private String nombre;
 
-    @NotBlank
-    @CreationTimestamp
+    @NotNull
     @Column(name = "FECHA_ALTA")
     private Timestamp fechaAlta;
+
+    @Column(name = "FECHA_MODIFICACION")
+    private Timestamp fechaModificacion;
 
     @Column(name = "FECHA_BAJA")
     private Timestamp fechaBaja;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_COMUNIDAD")
     private Comunidad comunidad;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_PROVINCIA")
-    private Comunidad provincia;
+    private Provincia provincia;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_MUNICIPIO")
-    private Comunidad municipio;
+    private Municipio municipio;
 
-    @OneToMany(mappedBy = "finca", cascade = CascadeType.ALL, orphanRemoval = true)
-    private HashSet<UsuarioFinca> usuarioFincas;
+    public Finca(String nombre, long onzas, Comunidad comunidad, Provincia provincia, Municipio municipio, Timestamp fechaAlta) {
+        this.nombre = nombre;
+        this.onzas = onzas;
+        this.comunidad = comunidad;
+        this.provincia = provincia;
+        this.municipio = municipio;
+        this.fechaAlta = fechaAlta;
+    }
 }

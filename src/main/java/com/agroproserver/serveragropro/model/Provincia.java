@@ -2,6 +2,8 @@ package com.agroproserver.serveragropro.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,6 +31,7 @@ import lombok.ToString;
 @Builder
 @ToString
 public class Provincia {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
@@ -43,9 +46,11 @@ public class Provincia {
     @JoinColumn(name = "ID_COMUNIDAD")
     private Comunidad comunidad;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "provincia", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Municipio> municipios;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "provincia", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Finca> fincas;
 }

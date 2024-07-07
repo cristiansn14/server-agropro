@@ -1,9 +1,7 @@
 package com.agroproserver.serveragropro.model;
 
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.util.UUID;
-
-import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,7 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,12 +27,12 @@ import lombok.ToString;
 @ToString
 public class UsuarioFinca {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID")
     private UUID id;
 
-    @Column(name = "PARTICIPACION")
-    private long participacion;
+    @Column(name = "ONZAS")
+    private long onzas;
 
     @ManyToOne
     @JoinColumn(name = "ID_USUARIO")
@@ -48,11 +46,18 @@ public class UsuarioFinca {
     @JoinColumn(name = "ID_ROL")
     private Rol rol;
 
-    @NotBlank
-    @CreationTimestamp
+    @NotNull
     @Column(name = "FECHA_ALTA")
     private Timestamp fechaAlta;
 
     @Column(name = "FECHA_BAJA")
     private Timestamp fechaBaja;
+
+    public UsuarioFinca (Usuario usuario, Finca finca, Rol rol, long onzas, Timestamp fechaAlta) {
+        this.usuario = usuario;
+        this.finca = finca;
+        this.rol = rol;
+        this.onzas = onzas;
+        this.fechaAlta = fechaAlta;
+    }
 }

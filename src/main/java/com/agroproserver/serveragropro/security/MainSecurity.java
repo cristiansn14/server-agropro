@@ -9,7 +9,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +20,7 @@ import com.agroproserver.serveragropro.security.jwt.JwtTokenFilter;
 import com.agroproserver.serveragropro.security.service.UserDetailsServiceImpl;
 
 @Configuration
-@EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 public class MainSecurity{
     
     @Autowired
@@ -30,9 +28,6 @@ public class MainSecurity{
 
     @Autowired
     JwtEntryPoint unauthorizedHandler;
-
-    @Autowired
-    private JwtTokenFilter tokenFilter;
 
     @Bean
     public JwtTokenFilter jwtTokenFilter(){
@@ -64,13 +59,13 @@ public class MainSecurity{
         return http.csrf(csrf -> csrf.disable())
         .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
         .authorizeHttpRequests(auth ->
-                auth.requestMatchers("/api/auth/**").permitAll()
+                auth.requestMatchers("/**", "/api/auth/**").permitAll()
                         .anyRequest()
                         .authenticated()                        
         )
         .authenticationProvider(authenticationProvider())       
-        .sessionManagement((session)->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //Means we are applying session management
-        .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class) //Using JwtTokenFilter first
+        .sessionManagement((session)->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
         .httpBasic(Customizer.withDefaults()).build();
     }
 

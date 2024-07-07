@@ -2,6 +2,8 @@ package com.agroproserver.serveragropro.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,15 +31,16 @@ import lombok.ToString;
 @Builder
 @ToString
 public class Municipio {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private long id;
 
-    @Size(max = 30)
+    @Size(max = 70)
     @Column(name = "NOMBRE")
     @NotNull
-    private String nombre;
+    private String nombre;  
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_COMUNIDAD")
@@ -45,8 +48,13 @@ public class Municipio {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_PROVINCIA")
-    private Provincia provincia;
+    private Provincia provincia;  
 
+    @NotNull
+    @Column(name = "ID_MUNICIPIO")
+    private long idMunicipio;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "municipio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Finca> fincas;
 }

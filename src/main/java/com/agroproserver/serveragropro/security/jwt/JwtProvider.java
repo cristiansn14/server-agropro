@@ -38,7 +38,7 @@ public class JwtProvider {
     }
 
     private Key getKey(){
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.secretKeyFor(SignatureAlgorithm.HS512);
     }
 
     public String getUsenameFromToken(String token){
