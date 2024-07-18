@@ -6,15 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.agroproserver.serveragropro.model.Municipio;
-
+import com.agroproserver.serveragropro.model.PoligonoParcela;
 
 @Repository
 @Transactional
-public interface MunicipioRepository extends JpaRepository<Municipio, Long> {
+public interface PoligonoParcelaRepository extends JpaRepository<PoligonoParcela, Long>{
 
-    List<Municipio> findByProvinciaId(Long idProvincia);
-
-    Municipio findByNombreAndProvinciaNombre(String municipio, String provincia);
-
+    List<PoligonoParcela> findByProvinciaIdAndMunicipioId(Long idProvincia, Long idMunicipio);
 }

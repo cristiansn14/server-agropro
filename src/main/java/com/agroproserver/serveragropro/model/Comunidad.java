@@ -49,4 +49,8 @@ public class Comunidad {
     @JsonIgnore
     @OneToMany(mappedBy = "comunidad", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Finca> fincas;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "comunidad", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Usuario> usuarios;
 }

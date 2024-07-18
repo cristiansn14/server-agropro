@@ -19,32 +19,33 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "usuario_finca")
+@Table(name = "usuario_parcela")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @ToString
-public class UsuarioFinca {
+public class UsuarioParcela {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID")
     private UUID id;
 
-    @Column(name = "ONZAS")
-    private long onzas;
+    @Column(name = "PARTICIPACION")
+    private long participacion;
 
     @ManyToOne
     @JoinColumn(name = "ID_USUARIO")
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "ID_FINCA")
-    private Finca finca;
+    @JoinColumn(name = "REFERENCIA_CATASTRAL_PARCELA")
+    private Parcela parcela;
 
     @ManyToOne
-    @JoinColumn(name = "ID_ROL")
-    private Rol rol;
+    @JoinColumn(name = "REFERENCIA_CATASTRAL_PARCELA_CONSTRUCCION")
+    private ParcelaConstruccion parcelaConstruccion;
 
     @NotNull
     @Column(name = "FECHA_ALTA")
@@ -56,11 +57,17 @@ public class UsuarioFinca {
     @Column(name = "FECHA_BAJA")
     private Timestamp fechaBaja;
 
-    public UsuarioFinca (Usuario usuario, Finca finca, Rol rol, long onzas, Timestamp fechaAlta) {
+    public UsuarioParcela (Usuario usuario, Parcela parcela, long participacion, Timestamp fechaAlta) {
         this.usuario = usuario;
-        this.finca = finca;
-        this.rol = rol;
-        this.onzas = onzas;
+        this.parcela = parcela;
+        this.participacion = participacion;
+        this.fechaAlta = fechaAlta;
+    }
+
+    public UsuarioParcela (Usuario usuario, ParcelaConstruccion parcelaConstruccion, long participacion, Timestamp fechaAlta) {
+        this.usuario = usuario;
+        this.parcelaConstruccion = parcelaConstruccion;
+        this.participacion = participacion;
         this.fechaAlta = fechaAlta;
     }
 }

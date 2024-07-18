@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -66,6 +67,18 @@ public class Usuario {
     @Size(max = 9)
     @Column(name = "TELEFONO")
     private String telefono;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ID_COMUNIDAD")
+    private Comunidad comunidad;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ID_PROVINCIA")
+    private Provincia provincia;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ID_MUNICIPIO")
+    private Municipio municipio;
 
     @Column(name = "DIRECCION")
     private String direccion;

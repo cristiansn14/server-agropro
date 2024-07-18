@@ -31,4 +31,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID>{
            "SELECT uf FROM UsuarioFinca uf WHERE uf.usuario.id = u.id AND uf.finca.id = :fincaId) ")
     List<Usuario> findUsuariosNotInFinca(@Param("fincaId") UUID fincaId);
 
+    @Query("SELECT u FROM Usuario u JOIN u.usuarioFincas uf WHERE uf.finca.id = :fincaId " +
+       "AND NOT EXISTS (" +
+       "SELECT uf2 FROM UsuarioFinca uf2 WHERE uf2.usuario.id = u.id AND uf2.rol.rol = 'SUPERUSUARIO')")
+    List<Usuario> findUsuariosInFinca(@Param("fincaId") UUID fincaId);
+
 }

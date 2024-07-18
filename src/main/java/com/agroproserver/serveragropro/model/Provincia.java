@@ -53,4 +53,8 @@ public class Provincia {
     @JsonIgnore
     @OneToMany(mappedBy = "provincia", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Finca> fincas;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "provincia", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Usuario> usuarios;
 }
