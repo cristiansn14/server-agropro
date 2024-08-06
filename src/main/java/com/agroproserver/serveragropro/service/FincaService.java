@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
 import com.agroproserver.serveragropro.dto.request.FincaRequestDto;
@@ -166,6 +167,7 @@ public class FincaService {
         }       
     }
 
+    @Transactional
     public ResponseEntity<?> findUsuarioFincaByUsuarioIdAndFincaId (UUID idUsuario, UUID idFinca) {
         UsuarioFinca usuarioFinca = usuarioFincaRepository.findByUsuarioIdAndFincaId(idUsuario, idFinca);
         UsuarioFincaDto usuarioFincaDto = new UsuarioFincaDto(

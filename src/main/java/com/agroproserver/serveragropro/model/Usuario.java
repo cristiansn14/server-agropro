@@ -16,6 +16,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
@@ -113,6 +114,10 @@ public class Usuario {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(  name = "usuario_roles", joinColumns = @JoinColumn(name = "ID_USUARIO"), inverseJoinColumns = @JoinColumn(name = "ID_ROL"))
     private Set<Rol> roles;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ID_ARCHIVO")
+    private Archivo foto;
 
     public Usuario (String username, String password, String email, String nombre, String apellido1, String apellido2) {
         this.username = username;

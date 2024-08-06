@@ -8,9 +8,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.agroproserver.serveragropro.dto.request.UsuarioRequestDto;
 import com.agroproserver.serveragropro.service.UsuarioService;
@@ -29,14 +30,21 @@ public class UsuarioController {
         return usuarioService.findUsuariosNotInFinca(idFinca);
     }
 
+    @GetMapping("/getFotoPerfil/{idUsuario}")
+    public ResponseEntity<byte[]> getFotoPerfil(@PathVariable UUID idUsuario) {
+        return usuarioService.getFotoPerfil(idUsuario);
+    }
+
     @GetMapping("/findById/{id}")
     public ResponseEntity<?> findById(@PathVariable UUID id) {
         return usuarioService.findById(id);
     }
 
     @PostMapping("/editarUsuario")
-    public ResponseEntity<?> editarUsuario(@Valid @RequestBody UsuarioRequestDto usuario, BindingResult bindingResult) {
-        return usuarioService.editarUsuario(usuario, bindingResult);
+    public ResponseEntity<?> editarUsuario(@RequestPart("usuario") @Valid UsuarioRequestDto usuario,
+        @RequestPart(value = "foto", required = false) MultipartFile foto,
+        BindingResult bindingResult) {
+            return usuarioService.editarUsuario(usuario, foto, bindingResult);
     }
 
     @GetMapping("/findUsuariosInFinca/{idFinca}")

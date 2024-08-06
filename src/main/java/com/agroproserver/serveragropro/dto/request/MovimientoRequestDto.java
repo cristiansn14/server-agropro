@@ -13,31 +13,17 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class ParcelaConstruccionRequestDto {
+public class MovimientoRequestDto {
+
+    @NotNull
+    private long importe;
 
     @NotBlank
-    private String referenciaCatastral;
+    private String concepto;
 
     @NotBlank
-    private String usoPrincipal;
-
-    @NotNull
-    private Long superficie;
-
-    @NotNull
-    private Long escalera;
-
-    @NotNull
-    private Long planta;
-
-    @NotNull
-    private Long puerta;
+    private String tipo;
 
     @NotNull
     private UUID idFinca;
-
-    private String tipoReforma;
-
-    private String fechaReforma;
-
 }

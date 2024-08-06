@@ -6,22 +6,33 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
 
 import com.agroproserver.serveragropro.dto.request.UsuarioRequestDto;
 import com.agroproserver.serveragropro.dto.response.UsuarioResponseDto;
+import com.agroproserver.serveragropro.model.Archivo;
 import com.agroproserver.serveragropro.model.Comunidad;
 import com.agroproserver.serveragropro.model.Municipio;
 import com.agroproserver.serveragropro.model.Provincia;
 import com.agroproserver.serveragropro.model.Usuario;
 import com.agroproserver.serveragropro.payload.response.MessageResponse;
+import com.agroproserver.serveragropro.repository.ArchivoRepository;
 import com.agroproserver.serveragropro.repository.ComunidadRepository;
 import com.agroproserver.serveragropro.repository.MunicipioRepository;
 import com.agroproserver.serveragropro.repository.ProvinciaRepository;
 import com.agroproserver.serveragropro.repository.UsuarioRepository;
+import com.agroproserver.serveragropro.utils.ImageUtils;
 
+import java.io.IOException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -40,6 +51,8 @@ public class UsuarioService {
     @Autowired
     MunicipioRepository municipioRepository;
 
+    @Autowired
+    ArchivoRepository archivoRepository;
 
     public ResponseEntity<?> findById(UUID id) {
         
@@ -78,7 +91,8 @@ public class UsuarioService {
             usuario.getDireccion(),
             usuario.getCodigoPostal(),
             usuario.getCuenta(),
-            usuario.getFechaAlta()
+            usuario.getFechaAlta(),
+            usuario.getFechaBaja()
         );  
         
         return ResponseEntity.ok(usuarioDto);
@@ -86,6 +100,30 @@ public class UsuarioService {
     
     public Optional<Usuario> getByUsername(String username){
         return usuarioRepository.findByUsername(username);
+    }
+
+    public ResponseEntity<byte[]> getFotoPerfil(UUID idUsuario){
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+            .orElseThrow(() -> new RuntimeException("No se ha encontrado ningun usuario."));
+
+        if (usuario.getFoto() != null) {
+            Archivo archivo = usuario.getFoto();
+            return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(archivo.getType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + archivo.getName() + "\"")
+                .body(ImageUtils.decompressImage(archivo.getData()));
+        } else {
+            try {
+                Resource imgFile = new ClassPathResource("static/default-avatar.png");
+                byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
+                return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"default-avatar.png\"")
+                    .body(bytes);
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        }
     }
 
     public boolean existsByUsername(String username){
@@ -128,7 +166,7 @@ public class UsuarioService {
         return ResponseEntity.ok(usuariosDto);
     }
 
-    public ResponseEntity<?> editarUsuario(UsuarioRequestDto usuarioRequestDto, BindingResult bindingResult) {
+    public ResponseEntity<?> editarUsuario(UsuarioRequestDto usuarioRequestDto, MultipartFile foto, BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()){
             return ResponseEntity.badRequest().body(new MessageResponse("Campos erróneos"));
@@ -191,6 +229,21 @@ public class UsuarioService {
                 if (municipioDto != usuario.getMunicipio()) {
                     usuario.setMunicipio(municipioDto);
                 }               
+            }
+            if (foto != null && !foto.isEmpty()) {
+                try {
+                    byte[] data = foto.getBytes();
+                    Archivo archivo = Archivo.builder()
+                                .name(foto.getOriginalFilename())
+                                .type(foto.getContentType())
+                                .data(ImageUtils.compressImage(data))
+                                .build();
+                    usuario.setFoto(archivo);
+                    archivoRepository.save(archivo);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException("Error al procesar la imagen", e);
+                }
             }
 
             usuarioRepository.save(usuario);
