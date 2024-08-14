@@ -1,5 +1,6 @@
 package com.agroproserver.serveragropro.dto.request;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import jakarta.validation.constraints.NotBlank;
@@ -22,7 +23,7 @@ public class ParcelaConstruccionRequestDto {
     private String usoPrincipal;
 
     @NotNull
-    private Long superficie;
+    private BigDecimal superficie;
 
     @NotNull
     private Long escalera;

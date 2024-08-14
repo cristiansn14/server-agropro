@@ -1,5 +1,7 @@
 package com.agroproserver.serveragropro.dto.request;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -13,6 +15,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class FincaRequestDto {
+
+    private UUID id;
 
     @NotBlank
     @Size(min = 3, max = 20)

@@ -1,5 +1,7 @@
 package com.agroproserver.serveragropro.dto.request;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -15,11 +17,11 @@ import lombok.ToString;
 public class RecintoRequestDto {
 
     @NotNull
-    private long superficie;
+    private BigDecimal superficie;
 
     private String pendiente;
 
-    private Long altitud; 
+    private BigDecimal altitud; 
 
     @NotBlank
     private Long cultivo;

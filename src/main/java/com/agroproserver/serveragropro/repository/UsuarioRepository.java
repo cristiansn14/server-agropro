@@ -28,12 +28,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID>{
     HashSet<Usuario> findAllByRoles(Rol rol);
 
     @Query("SELECT u FROM Usuario u WHERE NOT EXISTS (" +
-           "SELECT uf FROM UsuarioFinca uf WHERE uf.usuario.id = u.id AND uf.finca.id = :fincaId) ")
+        "SELECT uf FROM UsuarioFinca uf WHERE uf.usuario.id = u.id AND uf.finca.id = :fincaId) " +
+        "OR EXISTS (" +
+        "SELECT uf FROM UsuarioFinca uf WHERE uf.usuario.id = u.id AND uf.finca.id = :fincaId AND uf.fechaBaja IS NOT NULL)")
     List<Usuario> findUsuariosNotInFinca(@Param("fincaId") UUID fincaId);
 
     @Query("SELECT u FROM Usuario u JOIN u.usuarioFincas uf WHERE uf.finca.id = :fincaId " +
+       "AND uf.fechaBaja IS NULL " +  
        "AND NOT EXISTS (" +
-       "SELECT uf2 FROM UsuarioFinca uf2 WHERE uf2.usuario.id = u.id AND uf2.rol.rol = 'SUPERUSUARIO')")
+       "SELECT uf2 FROM UsuarioFinca uf2 WHERE uf2.usuario.id = u.id " +
+       "AND uf2.rol.rol = 'SUPERUSUARIO' " +
+       "AND uf2.fechaBaja IS NULL)")
     List<Usuario> findUsuariosInFinca(@Param("fincaId") UUID fincaId);
 
 }

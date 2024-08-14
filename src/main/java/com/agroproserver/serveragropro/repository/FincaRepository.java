@@ -22,11 +22,11 @@ public interface FincaRepository extends JpaRepository<Finca, UUID> {
     Optional<Finca> findByNombre(String nombre);
 
     @Query("SELECT f FROM Finca f WHERE EXISTS (" +
-           "SELECT uf FROM UsuarioFinca uf WHERE uf.finca = f AND uf.usuario.id = :usuarioId) ")
+           "SELECT uf FROM UsuarioFinca uf WHERE uf.finca = f AND uf.usuario.id = :usuarioId AND uf.fechaBaja IS NULL) ")
     List<Finca> findByUsuarioId(@Param("usuarioId") UUID usuarioId);
 
     @Query("SELECT f.onzas - COALESCE(SUM(uf.onzas), 0) FROM Finca f " +
-           "LEFT JOIN UsuarioFinca uf ON f.id = uf.finca.id " +
+           "LEFT JOIN UsuarioFinca uf ON f.id = uf.finca.id AND uf.fechaBaja IS NULL " +
            "WHERE f.id = :fincaId " +
            "GROUP BY f.onzas")
     Long getOnzasDisponibles(@Param("fincaId") UUID fincaId);

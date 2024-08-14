@@ -1,6 +1,5 @@
 package com.agroproserver.serveragropro.model;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -13,62 +12,63 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "subparcela")
+@Table(name = "representante")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Subparcela {
+public class Representante {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID")
     private UUID id;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "REFERENCIA_CATASTRAL")
-    private Parcela parcela;
+    @Size(max = 20)
+    @Column(name = "NOMBRE")
+    private String nombre;
+
+    @Size(max = 20)
+    @Column(name = "APELLIDO1")
+    private String apellido1;
+
+    @Size(max = 20)
+    @Column(name = "APELLIDO2")
+    private String apellido2;
+
+    @Size(max = 9)
+    @Column(name = "DNI")
+    private String dni;
 
     @NotBlank
-    @Column(name = "SUBPARCELA")
-    private String subparcela;
+    @Size(max = 50)
+    @Email
+    @Column(name = "EMAIL")
+    private String email;
 
-    @Column(name = "INTENSIDAD")
-    private String intensidad;
+    @Size(max = 9)
+    @Column(name = "TELEFONO")
+    private String telefono;
 
-    @Column(name = "SUPERFICIE")
-    private BigDecimal superficie;
-
-    @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ID_CULTIVO")
-    private Cultivo cultivo;
+    @JoinColumn(name = "ID_USUARIO")
+    private Usuario usuario;
 
     @NotNull
     @Column(name = "FECHA_ALTA")
     private Timestamp fechaAlta;
 
-    @Column(name = "FECHA_MODIFICACION")
-    private Timestamp fechaModificacion;
-
     @Column(name = "FECHA_BAJA")
     private Timestamp fechaBaja;
 
-    public Subparcela (Parcela parcela, String subparcela, String intensidad, BigDecimal superficie, Cultivo cultivo, Timestamp fechaAlta) {
-        this.parcela = parcela;
-        this.subparcela = subparcela;
-        this.intensidad = intensidad;
-        this.superficie = superficie;
-        this.cultivo = cultivo;
-        this.fechaAlta = fechaAlta;
-    }
 }

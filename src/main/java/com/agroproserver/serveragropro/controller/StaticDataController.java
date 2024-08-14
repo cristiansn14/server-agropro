@@ -58,4 +58,19 @@ public class StaticDataController {
     public ResponseEntity<?> findCultivos() {
         return staticDataService.findCultivos();
     }
+
+    @GetMapping("/getNombreComunidadById/{idComunidad}")
+    public ResponseEntity<?> getNombreComunidadById(@PathVariable long idComunidad) {
+        return staticDataService.getNombreComunidadById(idComunidad);
+    }
+
+    @GetMapping("/getNombreProvinciaById/{idProvincia}")
+    public ResponseEntity<?> getNombreProvinciaById(@PathVariable long idProvincia) {
+        return staticDataService.getNombreProvinciaById(idProvincia);
+    }
+
+    @GetMapping("/getNombreMunicipioById/{idMunicipio}")
+    public ResponseEntity<?> getNombreMunicipioById(@PathVariable long idMunicipio) {
+        return staticDataService.getNombreMunicipioById(idMunicipio);
+    }
 }

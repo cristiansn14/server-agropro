@@ -20,6 +20,11 @@ public interface UsuarioParcelaRepository extends JpaRepository<UsuarioParcela, 
     @Query("SELECT new com.agroproserver.serveragropro.dto.response.UsuarioParcelaResponseDto(" +
            "u.id, u.nombre, u.apellido1, u.apellido2, up.participacion, up.fechaAlta, up.fechaModificacion, up.fechaBaja) " +
            "FROM UsuarioParcela up JOIN up.usuario u " +
-           "WHERE up.parcela.referenciaCatastral = :referenciaCatastral")
+           "WHERE up.parcela.referenciaCatastral = :referenciaCatastral AND up.fechaBaja IS NULL")
     List<UsuarioParcelaResponseDto> findUsuarioParcelaByReferenciaCatastral(@Param("referenciaCatastral") String referenciaCatastral);
+
+    @Query("SELECT up FROM UsuarioParcela up " +
+        "JOIN up.parcela p " +
+        "WHERE p.finca.id = :fincaId AND up.fechaBaja IS NULL")
+    List<UsuarioParcela> findUsuariosParcelaByFincaId(@Param("fincaId") UUID fincaId);
 }

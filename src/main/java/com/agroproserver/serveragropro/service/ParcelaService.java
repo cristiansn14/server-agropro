@@ -3,6 +3,7 @@ package com.agroproserver.serveragropro.service;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
@@ -143,15 +144,16 @@ public class ParcelaService {
                     String.valueOf(i),
                     recintoDto.getSuperficie(),
                     recintoDto.getPendiente() != null ? recintoDto.getPendiente() : "",
-                    recintoDto.getAltitud() != null ? recintoDto.getAltitud() : 0,
+                    recintoDto.getAltitud() != null ? recintoDto.getAltitud() : BigDecimal.ZERO, 
                     cultivo,
                     recintoDto.getPorcentajeSubvencion() != null ? recintoDto.getPorcentajeSubvencion() : "",
-                    recintoDto.getSuperficieSubvencion() != null ? recintoDto.getSuperficieSubvencion() : 0,
-                    recintoDto.getCoeficienteRegadio() != null ? recintoDto.getCoeficienteRegadio() : 0,
+                    recintoDto.getSuperficieSubvencion() != null ? recintoDto.getSuperficieSubvencion() : 0L, 
+                    recintoDto.getCoeficienteRegadio() != null ? recintoDto.getCoeficienteRegadio() : 0L,
                     recintoDto.getIncidencias() != null ? recintoDto.getIncidencias() : "",
                     recintoDto.getRegion() != null ? recintoDto.getRegion() : "",
                     new Timestamp(System.currentTimeMillis())
                 );
+
 
                 recintoRepository.save(recinto);
             }

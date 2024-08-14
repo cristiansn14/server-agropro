@@ -1,5 +1,7 @@
 package com.agroproserver.serveragropro.dto.request;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,7 +19,7 @@ public class SubparcelaRequestDto {
     private String intensidad;
 
     @NotNull
-    private Long superficie;
+    private BigDecimal superficie;
 
     @NotBlank
     private Long cultivo;

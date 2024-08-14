@@ -1,6 +1,7 @@
 package com.agroproserver.serveragropro.model;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.UUID;
 
@@ -12,7 +13,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -23,13 +23,13 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "movimiento")
+@Table(name = "liquidacion")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @ToString
-public class Movimiento {
+public class Liquidacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -41,27 +41,28 @@ public class Movimiento {
     @NotNull
     private String concepto;
 
+    @Column(name = "TIPO")
     @NotNull
-    @Column(name = "IMPORTE", precision = 10, scale = 2)
-    private BigDecimal importe;
+    private String tipo;
 
     @NotNull
-    @Column(name = "FECHA")
-    private Date fecha;
+    @Column(name = "IMPORTE_TOTAL", precision = 10, scale = 2)
+    private BigDecimal importeTotal;
+
+    @NotNull
+    @Column(name = "FECHA_DESDE")
+    private Date fechaDesde;
+
+    @NotNull
+    @Column(name = "FECHA_HASTA")
+    private Date fechaHasta;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_FINCA")
     private Finca finca;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ID_ARCHIVO")
-    private Archivo archivo;    
+    @NotNull
+    @Column(name = "FECHA")
+    private Timestamp fecha;
 
-    public Movimiento (String concepto, BigDecimal importe, Date fecha, Finca finca, Archivo archivo) {
-        this.concepto = concepto;
-        this.importe = importe;
-        this.fecha = fecha;
-        this.finca = finca;
-        this.archivo = archivo;
-    }
 }

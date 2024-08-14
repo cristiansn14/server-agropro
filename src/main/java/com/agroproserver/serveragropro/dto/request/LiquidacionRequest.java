@@ -1,9 +1,8 @@
 package com.agroproserver.serveragropro.dto.request;
 
-import java.math.BigDecimal;
+import java.util.Date;
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,16 +13,19 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class MovimientoRequestDto {
+public class LiquidacionRequest {
 
     @NotNull
-    private BigDecimal importe;
-
-    @NotBlank
     private String concepto;
 
-    @NotBlank
+    @NotNull
     private String tipo;
+
+    @NotNull
+    private Date fechaDesde;
+
+    @NotNull
+    private Date fechaHasta;
 
     @NotNull
     private UUID idFinca;

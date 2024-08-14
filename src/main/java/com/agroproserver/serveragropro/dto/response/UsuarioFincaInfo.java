@@ -1,6 +1,5 @@
 package com.agroproserver.serveragropro.dto.response;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -13,34 +12,25 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class RecintoResponseDto {
+public class UsuarioFincaInfo {
 
     private UUID id;
 
-    private String recinto;
+    private long onzas;
 
-    private BigDecimal superficie;
+    private String nombre;
 
-    private String pendiente;
+    private String apellido1;
 
-    private BigDecimal altitud; 
+    private String apellido2;
 
-    private String cultivo;
+    private String rol;
 
-    private String porcentajeSubvencion;
-
-    private long superficieSubvencion;
-
-    private long coeficienteRegadio;
-
-    private String incidencias;
-
-    private String region;
+    private UUID idUsuario;
 
     private Timestamp fechaAlta;
 
     private Timestamp fechaModificacion;
 
     private Timestamp fechaBaja;
-
 }

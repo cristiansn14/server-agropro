@@ -1,5 +1,6 @@
 package com.agroproserver.serveragropro.model;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -37,8 +38,8 @@ public class ParcelaConstruccion {
     @Column(name = "USO_PRINCIPAL")
     private String usoPrincipal;
 
-    @Column(name = "SUPERFICIE")
-    private long superficie;
+    @Column(name = "SUPERFICIE", precision = 10, scale = 2)
+    private BigDecimal superficie;
 
     @Column(name = "ESCALERA")
     private long escalera;
@@ -70,7 +71,7 @@ public class ParcelaConstruccion {
     @Column(name = "FECHA_BAJA")
     private Timestamp fechaBaja;
 
-    public ParcelaConstruccion (String referenciaCatastral, String usoPrincipal, long superficie, 
+    public ParcelaConstruccion (String referenciaCatastral, String usoPrincipal, BigDecimal superficie, 
                     long escalera, long planta, long puerta, String tipoReforma, Date fechaReforma, Finca finca, Timestamp fechaAlta) {
         this.referenciaCatastral = referenciaCatastral;
         this.usoPrincipal = usoPrincipal;

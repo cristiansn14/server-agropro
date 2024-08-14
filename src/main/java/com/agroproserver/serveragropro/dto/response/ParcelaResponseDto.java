@@ -1,5 +1,6 @@
 package com.agroproserver.serveragropro.dto.response;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class ParcelaResponseDto {
 
     private String usoPrincipal;
 
-    private Long superficie;
+    private BigDecimal superficie;
 
     private Long valorSuelo;
 

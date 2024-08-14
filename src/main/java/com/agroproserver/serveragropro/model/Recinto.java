@@ -1,5 +1,6 @@
 package com.agroproserver.serveragropro.model;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -43,13 +44,13 @@ public class Recinto {
 
     @NotNull
     @Column(name = "SUPERFICIE")
-    private long superficie;
+    private BigDecimal superficie;
 
     @Column(name = "PENDIENTE")
     private String pendiente;
 
     @Column(name = "ALTITUD")
-    private long altitud; 
+    private BigDecimal altitud; 
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
@@ -81,7 +82,7 @@ public class Recinto {
     @Column(name = "FECHA_BAJA")
     private Timestamp fechaBaja;
 
-    public Recinto (Parcela parcela, String recinto, long superficie, String pendiente, long altitud, 
+    public Recinto (Parcela parcela, String recinto, BigDecimal superficie, String pendiente, BigDecimal altitud, 
                     Cultivo cultivo, String porcentajeSubvencion, long superficieSubvencion, 
                     long coeficienteRegadio,  String incidencias, String region, Timestamp fechaAlta) {
         this.parcela = parcela;

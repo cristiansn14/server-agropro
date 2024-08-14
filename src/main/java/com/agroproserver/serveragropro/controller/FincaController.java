@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.agroproserver.serveragropro.dto.request.FincaRequestDto;
 import com.agroproserver.serveragropro.dto.request.UsuarioFincaRequestDto;
+import com.agroproserver.serveragropro.dto.response.UsuarioFincaDto;
 import com.agroproserver.serveragropro.service.FincaService;
 
 import jakarta.validation.Valid;
@@ -26,14 +27,34 @@ public class FincaController {
     @Autowired
     FincaService fincaService;
 
+    @GetMapping("/findById/{idFinca}")
+    public ResponseEntity<?> findById(@PathVariable UUID idFinca) {
+        return fincaService.findById(idFinca);
+    }
+
     @PostMapping("/guardarFinca")
     public ResponseEntity<?> guardarFinca(@Valid @RequestBody FincaRequestDto fincaDto, BindingResult bindingResult){
         return fincaService.guardarFinca(fincaDto, bindingResult);
     }
 
+    @PostMapping("/editarFinca")
+    public ResponseEntity<?> editarFinca(@Valid @RequestBody FincaRequestDto fincaDto, BindingResult bindingResult){
+        return fincaService.editarFinca(fincaDto, bindingResult);
+    }
+
     @PostMapping("/addUsuariosFinca")
     public ResponseEntity<?> addUsuariosFinca(@Valid @RequestBody List<UsuarioFincaRequestDto> usuariosFincaDto, BindingResult bindingResult){
         return fincaService.addUsuariosFinca(usuariosFincaDto, bindingResult);
+    }
+
+    @PostMapping("/editarUsuarioFinca")
+    public ResponseEntity<?> editarUsuarioFinca(@Valid @RequestBody UsuarioFincaDto usuarioFincaDto, BindingResult bindingResult){
+        return fincaService.editarUsuarioFinca(usuarioFincaDto, bindingResult);
+    }
+
+    @PostMapping("/eliminarUsuarioFinca")
+    public ResponseEntity<?> eliminarUsuarioFinca(@Valid @RequestBody UsuarioFincaDto usuarioFincaDto){
+        return fincaService.eliminarUsuarioFinca(usuarioFincaDto);
     }
 
     @GetMapping("/findAllFincasByUsuarioId/{idUsuario}")
@@ -49,5 +70,20 @@ public class FincaController {
     @GetMapping("/getOnzasDisponibles/{idFinca}")
     public ResponseEntity<?> getOnzasDisponibles(@PathVariable UUID idFinca) {
         return fincaService.getOnzasDisponibles(idFinca);
+    }
+
+    @GetMapping("/getParcelasByIdFinca/{idFinca}")
+    public ResponseEntity<?> getParcelasByIdFinca(@PathVariable UUID idFinca) {
+        return fincaService.getParcelasByIdFinca(idFinca);
+    }
+
+    @GetMapping("/findUsuariosFincaByFincaId/{idFinca}")
+    public ResponseEntity<?> findUsuariosFincaByFincaId(@PathVariable UUID idFinca) {
+        return fincaService.findUsuariosFincaByFincaId(idFinca);
+    }
+
+    @GetMapping("/findUsuarioFincaById/{idUsuarioFinca}")
+    public ResponseEntity<?> findUsuarioFincaById(@PathVariable UUID idUsuarioFinca) {
+        return fincaService.findUsuarioFincaById(idUsuarioFinca);
     }
 }

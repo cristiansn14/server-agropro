@@ -1,6 +1,7 @@
 package com.agroproserver.serveragropro.dto.response;
 
 import java.util.Date;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
@@ -22,7 +23,7 @@ public class ConstruccionDto {
 
     private String usoPrincipal;
 
-    private long superficie;
+    private BigDecimal superficie;
 
     private long escalera;
 

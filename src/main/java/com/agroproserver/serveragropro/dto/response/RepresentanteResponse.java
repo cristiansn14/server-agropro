@@ -1,6 +1,5 @@
 package com.agroproserver.serveragropro.dto.response;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -13,21 +12,25 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class SubparcelaResponseDto {
+public class RepresentanteResponse {
 
     private UUID id;
 
-    private String subparcela;
+    private String nombre;
 
-    private String intensidad;
+    private String apellido1;
 
-    private BigDecimal superficie;
+    private String apellido2;
 
-    private String cultivo;
+    private String email;
+
+    private String dni;
+
+    private String telefono;
+
+    private UUID idUsuario;
 
     private Timestamp fechaAlta;
-
-    private Timestamp fechaModificacion;
 
     private Timestamp fechaBaja;
 }

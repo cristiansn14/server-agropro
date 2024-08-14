@@ -15,6 +15,8 @@ import com.agroproserver.serveragropro.dto.response.ParajeResponseDto;
 import com.agroproserver.serveragropro.dto.response.ProvinciaDto;
 import com.agroproserver.serveragropro.model.Finca;
 import com.agroproserver.serveragropro.model.Municipio;
+import com.agroproserver.serveragropro.model.Provincia;
+import com.agroproserver.serveragropro.model.Comunidad;
 import com.agroproserver.serveragropro.model.Cultivo;
 import com.agroproserver.serveragropro.repository.ComunidadRepository;
 import com.agroproserver.serveragropro.repository.CultivoRepository;
@@ -120,7 +122,7 @@ public class StaticDataService {
 
     public ResponseEntity<?> findParajeByFinca (UUID idFinca) {
         Finca finca = fincaRepository.findById(idFinca)
-                .orElseThrow(() -> new RuntimeException("Finca no encontrada")); 
+            .orElseThrow(() -> new RuntimeException("Finca no encontrada")); 
         List<ParajeResponseDto> parajes = parajeRepository.findByProvinciaIdAndMunicipioId(finca.getProvincia().getId(), finca.getMunicipio().getIdMunicipio())
             .stream().map(paraje -> new ParajeResponseDto(
                 paraje.getId(), 
@@ -133,5 +135,45 @@ public class StaticDataService {
     public ResponseEntity<?> findCultivos() {
         List<Cultivo> cultivos = cultivoRepository.findAll();
         return ResponseEntity.ok(cultivos);
+    }
+
+    public ResponseEntity<?> getNombreComunidadById (long idComunidad) {
+        Comunidad comunidad = comunidadRepository.findById(idComunidad)
+            .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
+
+        ComunidadDto comunidadDto = new ComunidadDto(
+            comunidad.getId(),
+            comunidad.getNombre()
+        );
+
+        return ResponseEntity.ok(comunidadDto);
+    }
+
+    public ResponseEntity<?> getNombreProvinciaById (long idProvincia) {
+        Provincia provincia = provinciaRepository.findById(idProvincia)
+            .orElseThrow(() -> new RuntimeException("Provincia no encontrada"));
+
+        ProvinciaDto provinciaDto = new ProvinciaDto(
+            provincia.getId(),
+            provincia.getNombre(),
+            provincia.getComunidad().getId()
+        );
+
+        return ResponseEntity.ok(provinciaDto);
+    }
+
+    public ResponseEntity<?> getNombreMunicipioById (long idMunicipio) {
+        Municipio municipio = municipioRepository.findById(idMunicipio)
+            .orElseThrow(() -> new RuntimeException("Municipio no encontrada"));
+        
+        MunicipioDto municipioDto = new MunicipioDto(
+            municipio.getId(),
+            municipio.getNombre(),
+            municipio.getComunidad().getId(),
+            municipio.getProvincia().getId(),
+            municipio.getIdMunicipio()
+        );
+
+        return ResponseEntity.ok(municipioDto);
     }
 }

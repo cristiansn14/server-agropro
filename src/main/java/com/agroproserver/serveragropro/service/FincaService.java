@@ -16,10 +16,13 @@ import com.agroproserver.serveragropro.dto.request.FincaRequestDto;
 import com.agroproserver.serveragropro.dto.request.UsuarioFincaRequestDto;
 import com.agroproserver.serveragropro.dto.response.FincaResponseDto;
 import com.agroproserver.serveragropro.dto.response.UsuarioFincaDto;
+import com.agroproserver.serveragropro.dto.response.UsuarioFincaInfo;
 import com.agroproserver.serveragropro.model.Comunidad;
 import com.agroproserver.serveragropro.model.ERol;
 import com.agroproserver.serveragropro.model.Finca;
 import com.agroproserver.serveragropro.model.Municipio;
+import com.agroproserver.serveragropro.model.Parcela;
+import com.agroproserver.serveragropro.model.ParcelaConstruccion;
 import com.agroproserver.serveragropro.model.Provincia;
 import com.agroproserver.serveragropro.model.Rol;
 import com.agroproserver.serveragropro.model.Usuario;
@@ -28,6 +31,8 @@ import com.agroproserver.serveragropro.payload.response.MessageResponse;
 import com.agroproserver.serveragropro.repository.ComunidadRepository;
 import com.agroproserver.serveragropro.repository.FincaRepository;
 import com.agroproserver.serveragropro.repository.MunicipioRepository;
+import com.agroproserver.serveragropro.repository.ParcelaConstruccionRepository;
+import com.agroproserver.serveragropro.repository.ParcelaRepository;
 import com.agroproserver.serveragropro.repository.ProvinciaRepository;
 import com.agroproserver.serveragropro.repository.RolRepository;
 import com.agroproserver.serveragropro.repository.UsuarioFincaRepository;
@@ -38,6 +43,12 @@ public class FincaService {
 
     @Autowired
     FincaRepository fincaRepository;
+
+    @Autowired
+    ParcelaRepository parcelaRepository;
+
+    @Autowired
+    ParcelaConstruccionRepository parcelaConstruccionRepository;
 
     @Autowired
     RolRepository rolRepository;
@@ -56,6 +67,45 @@ public class FincaService {
 
     @Autowired
     MunicipioRepository municipioRepository;
+
+    public ResponseEntity<?> findById(UUID idFinca) {
+        
+        Finca finca = fincaRepository.findById(idFinca)
+            .orElseThrow(() -> new RuntimeException("Finca no encontrada"));
+
+        FincaResponseDto fincaDto = new FincaResponseDto(
+            finca.getId(),
+            finca.getNombre(),
+            finca.getOnzas(),
+            finca.getComunidad().getId(),
+            finca.getProvincia().getId(),
+            finca.getMunicipio().getId(),
+            finca.getFechaAlta(),
+            finca.getFechaModificacion(),
+            finca.getFechaBaja()
+        );
+
+        return ResponseEntity.ok(fincaDto);
+    }
+
+    public ResponseEntity<?> getParcelasByIdFinca(UUID idFinca) {
+        
+        List<Parcela> parcelas = parcelaRepository.findByFincaId(idFinca);
+        List<ParcelaConstruccion> parcelasConstruccion = parcelaConstruccionRepository.findByFincaId(idFinca);
+        List<String> referenciaParcelas = new ArrayList<>();
+
+        if(!parcelas.isEmpty()){           
+            for (Parcela parcela : parcelas) {
+                referenciaParcelas.add(parcela.getReferenciaCatastral());
+            }           
+        } 
+        if(!parcelasConstruccion.isEmpty()){
+            for (ParcelaConstruccion parcelaConstruccion : parcelasConstruccion) {
+                referenciaParcelas.add(parcelaConstruccion.getReferenciaCatastral());
+            }
+        }
+        return ResponseEntity.ok(referenciaParcelas);               
+    }
 
     public ResponseEntity<?> guardarFinca(FincaRequestDto fincaDto, BindingResult bindingResult) {
         
@@ -85,7 +135,7 @@ public class FincaService {
                 new Timestamp(System.currentTimeMillis()) 
             );
 
-            Finca nuevaFinca = fincaRepository.save(finca);
+            fincaRepository.save(finca);
 
             Rol superUsuarioRol = rolRepository.findByRol(ERol.SUPERUSUARIO)
                 .orElseThrow(() -> new RuntimeException("Rol SUPERUSUARIO no encontrado"));
@@ -94,7 +144,7 @@ public class FincaService {
                 superUsuarios.forEach(superUsuario -> {
                     UsuarioFinca usuarioFinca = new UsuarioFinca(
                         superUsuario,
-                        nuevaFinca, 
+                        finca, 
                         superUsuarioRol,
                         0,
                         new Timestamp(System.currentTimeMillis())
@@ -106,6 +156,48 @@ public class FincaService {
             return ResponseEntity.ok(new MessageResponse("La finca " + finca.getNombre() + " se ha añadido correctamente"));
         }
     }
+
+    public ResponseEntity<?> editarFinca (FincaRequestDto fincaDto, BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()){
+            return ResponseEntity.badRequest().body(new MessageResponse("Campos erróneos"));
+        } else if (fincaDto == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha modificado ninguna finca"));
+        } else {
+            Finca finca = fincaRepository.findById(fincaDto.getId())
+                .orElseThrow(() -> new RuntimeException("Finca no encontrada"));
+            
+            if (!fincaDto.getNombre().equals(finca.getNombre())) {
+                finca.setOnzas(fincaDto.getOnzas());
+            }
+            if (fincaDto.getOnzas() != finca.getOnzas()) {
+                finca.setNombre(fincaDto.getNombre());
+            }
+
+            Comunidad comunidad = comunidadRepository.findById(fincaDto.getComunidad())
+                .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
+            if (comunidad != finca.getComunidad()) {
+                finca.setComunidad(comunidad);
+            }
+
+            Provincia provincia = provinciaRepository.findById(fincaDto.getProvincia())
+                    .orElseThrow(() -> new RuntimeException("Provincia no encontrada"));
+            if (provincia != finca.getProvincia()) {
+                finca.setProvincia(provincia);
+            }    
+            
+            Municipio municipio = municipioRepository.findById(fincaDto.getMunicipio())
+                    .orElseThrow(() -> new RuntimeException("Municipio no encontrado"));
+            if (municipio != finca.getMunicipio()) {
+                finca.setMunicipio(municipio);
+            }
+
+            finca.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
+            
+            fincaRepository.save(finca);
+            return ResponseEntity.ok(new MessageResponse("La finca " + finca.getNombre() + " se ha modificado correctamente"));
+        }
+    }    
 
     public ResponseEntity<?> addUsuariosFinca (List<UsuarioFincaRequestDto> usuariosFincaDto, BindingResult bindingResult) {
 
@@ -130,7 +222,7 @@ public class FincaService {
                 
                     default:
                         rol = rolRepository.findByRol(ERol.PROPIETARIO)
-                            .orElseThrow(() -> new RuntimeException("Rol ADMINISTRADOR no encontrado"));
+                            .orElseThrow(() -> new RuntimeException("Rol PROPIETARIO no encontrado"));
                     break;
                 }
                     
@@ -147,6 +239,54 @@ public class FincaService {
             
             return ResponseEntity.ok(new MessageResponse("Se han añadido los usuarios introducidos correctamente"));
         }
+    }
+
+    public ResponseEntity<?> editarUsuarioFinca (UsuarioFincaDto usuarioFincaDto, BindingResult bindingResult) {
+
+        if(bindingResult.hasErrors()){
+            return ResponseEntity.badRequest().body(new MessageResponse("Campos erróneos"));
+        }
+        if (usuarioFincaDto == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ningún usuario a la finca"));
+        } else {
+            UsuarioFinca usuarioFinca = usuarioFincaRepository.findById(usuarioFincaDto.getId())
+                .orElseThrow(() -> new RuntimeException("Usuario finca no encontrado"));
+            
+            if (usuarioFincaDto.getOnzas() != usuarioFinca.getOnzas()) {
+                usuarioFinca.setOnzas(usuarioFincaDto.getOnzas());
+            }
+            if (!usuarioFincaDto.getRol().equals(usuarioFinca.getRol().getRol().toString())) {
+                Rol rol = new Rol();
+
+                switch (usuarioFincaDto.getRol()) {
+                    case "ADMINISTRADOR":
+                        rol = rolRepository.findByRol(ERol.ADMINISTRADOR)
+                            .orElseThrow(() -> new RuntimeException("Rol ADMINISTRADOR no encontrado"));
+                    break;
+                
+                    default:
+                        rol = rolRepository.findByRol(ERol.PROPIETARIO)
+                            .orElseThrow(() -> new RuntimeException("Rol PROPIETARIO no encontrado"));
+                    break;
+                }
+
+                usuarioFinca.setRol(rol);
+            }
+            usuarioFinca.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
+            usuarioFincaRepository.save(usuarioFinca);
+            return ResponseEntity.ok(new MessageResponse("El usuario " + usuarioFinca.getUsuario().getUsername() + " de la finca " + usuarioFinca.getFinca().getNombre() + " se ha modificado correctamente"));
+        }   
+    }
+
+    public ResponseEntity<?> eliminarUsuarioFinca (UsuarioFincaDto usuarioFincaDto) {
+
+        UsuarioFinca usuarioFinca = usuarioFincaRepository.findById(usuarioFincaDto.getId())
+            .orElseThrow(() -> new RuntimeException("Usuario finca no encontrado"));
+        
+        usuarioFinca.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+        usuarioFincaRepository.save(usuarioFinca);
+        
+        return ResponseEntity.ok(new MessageResponse("El usuario " + usuarioFinca.getUsuario().getUsername() + " de la finca " + usuarioFinca.getFinca().getNombre() + " se ha elliminado correctamente"));
     }
 
     public ResponseEntity<?> findAllFincasByUsuarioId (UUID idUsuario) {
@@ -180,6 +320,53 @@ public class FincaService {
             usuarioFinca.getFechaBaja()
         );
         return ResponseEntity.ok(usuarioFincaDto);
+    }
+
+    @Transactional
+    public ResponseEntity<?> findUsuariosFincaByFincaId (UUID idFinca) {
+
+        List<UsuarioFinca> usuariosFinca = usuarioFincaRepository.findUsuariosFincaByFincaId(idFinca);
+        List<UsuarioFincaInfo> usuariosFincaInfo = new ArrayList<>();
+
+        for (UsuarioFinca usuarioFinca : usuariosFinca) {
+            UsuarioFincaInfo usuarioFincaInfo = new UsuarioFincaInfo(
+                usuarioFinca.getId(),
+                usuarioFinca.getOnzas(),                
+                usuarioFinca.getUsuario().getNombre(),
+                usuarioFinca.getUsuario().getApellido1(),
+                usuarioFinca.getUsuario().getApellido2(),
+                usuarioFinca.getRol().getRol().toString(),
+                usuarioFinca.getUsuario().getId(),
+                usuarioFinca.getFechaAlta(),
+                usuarioFinca.getFechaModificacion(),
+                usuarioFinca.getFechaBaja()
+            );
+
+            usuariosFincaInfo.add(usuarioFincaInfo);
+        }
+
+        return ResponseEntity.ok(usuariosFincaInfo);
+    }
+
+    public ResponseEntity<?> findUsuarioFincaById (UUID idUsuarioFinca) {
+        
+        UsuarioFinca usuarioFinca = usuarioFincaRepository.findById(idUsuarioFinca)
+            .orElseThrow(() -> new RuntimeException("No se ha encontrado ningun usuario asociado a la finca"));
+        
+        UsuarioFincaInfo usuarioFincaInfo = new UsuarioFincaInfo(
+            usuarioFinca.getId(),
+            usuarioFinca.getOnzas(),                
+            usuarioFinca.getUsuario().getNombre(),
+            usuarioFinca.getUsuario().getApellido1(),
+            usuarioFinca.getUsuario().getApellido2(),
+            usuarioFinca.getRol().getRol().toString(),
+            usuarioFinca.getUsuario().getId(),
+            usuarioFinca.getFechaAlta(),
+            usuarioFinca.getFechaModificacion(),
+            usuarioFinca.getFechaBaja()
+        );
+
+        return ResponseEntity.ok(usuarioFincaInfo);
     }
 
     public ResponseEntity<?> getOnzasDisponibles (UUID idFinca) {

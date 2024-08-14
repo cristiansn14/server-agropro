@@ -17,22 +17,28 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.Resource;
 
+import com.agroproserver.serveragropro.dto.request.RepresentanteRequest;
 import com.agroproserver.serveragropro.dto.request.UsuarioRequestDto;
+import com.agroproserver.serveragropro.dto.response.RepresentanteResponse;
 import com.agroproserver.serveragropro.dto.response.UsuarioResponseDto;
 import com.agroproserver.serveragropro.model.Archivo;
 import com.agroproserver.serveragropro.model.Comunidad;
 import com.agroproserver.serveragropro.model.Municipio;
 import com.agroproserver.serveragropro.model.Provincia;
+import com.agroproserver.serveragropro.model.Representante;
 import com.agroproserver.serveragropro.model.Usuario;
 import com.agroproserver.serveragropro.payload.response.MessageResponse;
 import com.agroproserver.serveragropro.repository.ArchivoRepository;
 import com.agroproserver.serveragropro.repository.ComunidadRepository;
 import com.agroproserver.serveragropro.repository.MunicipioRepository;
 import com.agroproserver.serveragropro.repository.ProvinciaRepository;
+import com.agroproserver.serveragropro.repository.RepresentanteRepository;
 import com.agroproserver.serveragropro.repository.UsuarioRepository;
 import com.agroproserver.serveragropro.utils.ImageUtils;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+
 import jakarta.transaction.Transactional;
 
 @Service
@@ -53,6 +59,9 @@ public class UsuarioService {
 
     @Autowired
     ArchivoRepository archivoRepository;
+
+    @Autowired
+    RepresentanteRepository representanteRepository;
 
     public ResponseEntity<?> findById(UUID id) {
         
@@ -210,24 +219,24 @@ public class UsuarioService {
                 usuario.setCodigoPostal(usuarioRequestDto.getCodigoPostal());
             }
             if (usuarioRequestDto.getComunidad() != null) {
-                Comunidad comunidadDto = comunidadRepository.findById(usuarioRequestDto.getComunidad())
+                Comunidad comunidad = comunidadRepository.findById(usuarioRequestDto.getComunidad())
                     .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
-                if (comunidadDto != usuario.getComunidad()) {
-                    usuario.setComunidad(comunidadDto);
+                if (comunidad != usuario.getComunidad()) {
+                    usuario.setComunidad(comunidad);
                 }               
             }
             if (usuarioRequestDto.getProvincia() != null) {
-                Provincia provinciaDto = provinciaRepository.findById(usuarioRequestDto.getProvincia())
+                Provincia provincia = provinciaRepository.findById(usuarioRequestDto.getProvincia())
                     .orElseThrow(() -> new RuntimeException("Provincia no encontrada"));
-                if (provinciaDto != usuario.getProvincia()) {
-                    usuario.setProvincia(provinciaDto);
+                if (provincia != usuario.getProvincia()) {
+                    usuario.setProvincia(provincia);
                 }               
             }
             if (usuarioRequestDto.getMunicipio() != null) {
-                Municipio municipioDto = municipioRepository.findById(usuarioRequestDto.getMunicipio())
+                Municipio municipio = municipioRepository.findById(usuarioRequestDto.getMunicipio())
                     .orElseThrow(() -> new RuntimeException("Municipio no encontrado"));
-                if (municipioDto != usuario.getMunicipio()) {
-                    usuario.setMunicipio(municipioDto);
+                if (municipio != usuario.getMunicipio()) {
+                    usuario.setMunicipio(municipio);
                 }               
             }
             if (foto != null && !foto.isEmpty()) {
@@ -238,6 +247,7 @@ public class UsuarioService {
                                 .type(foto.getContentType())
                                 .data(ImageUtils.compressImage(data))
                                 .build();
+                    archivoRepository.delete(usuario.getFoto());        
                     usuario.setFoto(archivo);
                     archivoRepository.save(archivo);
                 } catch (IOException e) {
@@ -247,7 +257,117 @@ public class UsuarioService {
             }
 
             usuarioRepository.save(usuario);
-            return ResponseEntity.ok(new MessageResponse("El usuario " + usuario.getUsername() + " se ha añadido correctamente"));
+            return ResponseEntity.ok(new MessageResponse("El usuario " + usuario.getUsername() + " se ha modificado correctamente"));
         }
+    }
+
+    public ResponseEntity<?> añadirRepresentante (RepresentanteRequest representanteDto, BindingResult bindingResult) {
+
+        if(bindingResult.hasErrors()){
+            return ResponseEntity.badRequest().body(new MessageResponse("Campos erróneos"));
+        } else if (representanteDto == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ningun representante"));
+        } else {
+            Usuario usuario = usuarioRepository.findById(representanteDto.getIdUsuario())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            Representante representante = Representante.builder()
+                                .nombre(representanteDto.getNombre())
+                                .apellido1(representanteDto.getApellido1())
+                                .apellido2(representanteDto.getApellido2())
+                                .dni(representanteDto.getDni())
+                                .email(representanteDto.getEmail())
+                                .telefono(representanteDto.getTelefono())
+                                .usuario(usuario)
+                                .fechaAlta(new Timestamp(System.currentTimeMillis()))
+                                .build();
+
+            representanteRepository.save(representante);
+            return ResponseEntity.ok(new MessageResponse("El representante " + representante.getNombre() + " se ha añadido correctamente"));
+        }
+    }
+
+    public ResponseEntity<?> editarRepresentante (RepresentanteResponse representanteDto, BindingResult bindingResult) {
+
+        if(bindingResult.hasErrors()){
+            return ResponseEntity.badRequest().body(new MessageResponse("Campos erróneos"));
+        } else if (representanteDto == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ningun representante"));
+        } else {
+            Representante representante = representanteRepository.findById(representanteDto.getId())
+                .orElseThrow(() -> new RuntimeException("Representante no encontrado"));
+
+            if (!representanteDto.getNombre().equals(representante.getNombre())) {
+                representante.setNombre(representanteDto.getNombre());
+            }
+            if (!representanteDto.getApellido1().equals(representante.getApellido1())) {
+                representante.setApellido1(representanteDto.getApellido1());
+            }
+            if (!representanteDto.getApellido2().equals(representante.getApellido2())) {
+                representante.setApellido2(representanteDto.getApellido2());
+            }
+            if (!representanteDto.getEmail().equals(representante.getEmail())) {
+                representante.setEmail(representanteDto.getEmail());
+            }
+            if (!representanteDto.getTelefono().equals(representante.getEmail())) {
+                representante.setTelefono(representanteDto.getTelefono());
+            }
+            if (!representanteDto.getDni().equals(representante.getDni())) {
+                representante.setDni(representanteDto.getDni());
+            }          
+
+            representanteRepository.save(representante);
+            return ResponseEntity.ok(new MessageResponse("El representante " + representante.getNombre() + " se ha editado correctamente"));
+        }
+    }
+
+    public ResponseEntity<?> eliminarRepresentante (RepresentanteResponse representanteResponse) {
+
+        Representante representante = representanteRepository.findById(representanteResponse.getId())
+            .orElseThrow(() -> new RuntimeException("Representante no encontrado"));
+        
+        representante.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+        representanteRepository.save(representante);
+
+        return ResponseEntity.ok(new MessageResponse("El representante " + representante.getNombre() + " ha sido eliminado correctamente"));
+    }
+
+    public ResponseEntity<?> findRepresentantesByIdUsuario (UUID idUsuario) {
+
+        List<RepresentanteResponse> representantes = representanteRepository.findByUsuarioId(idUsuario).stream()
+            .map(representante -> new RepresentanteResponse(
+                representante.getId(),
+                representante.getNombre(),
+                representante.getApellido1(),
+                representante.getApellido2(),
+                representante.getEmail(),
+                representante.getDni(),
+                representante.getTelefono(),
+                representante.getUsuario().getId(),
+                representante.getFechaAlta(),
+                representante.getFechaBaja()
+            ))
+            .collect(Collectors.toList());
+            
+        return ResponseEntity.ok(representantes);
+    }
+
+    public ResponseEntity<?> findRepresentanteById (UUID idRepresentante) {
+
+        Representante representante = representanteRepository.findById(idRepresentante)
+            .orElseThrow(() -> new RuntimeException("Representante no encontrado"));
+        RepresentanteResponse representanteDto = new RepresentanteResponse(
+                representante.getId(),
+                representante.getNombre(),
+                representante.getApellido1(),
+                representante.getApellido2(),
+                representante.getEmail(),
+                representante.getDni(),
+                representante.getTelefono(),
+                representante.getUsuario().getId(),
+                representante.getFechaAlta(),
+                representante.getFechaBaja()
+        );
+
+        return ResponseEntity.ok(representanteDto);
     }
 }
