@@ -16,12 +16,23 @@ import lombok.ToString;
 public class SubparcelaRequestDto {
 
     @NotBlank
-    private String intensidad;
+    private String referenciaCatastral;
+
+    @NotBlank
+    private String subparcela;
+
+    @NotBlank
+    private String codigoCultivo;
+
+    @NotBlank
+    private String descripcionCultivo;  
+    
+    @NotBlank
+    private String intensidadProductiva;
 
     @NotNull
     private BigDecimal superficie;
 
-    @NotBlank
-    private Long cultivo;
+    
 
 }

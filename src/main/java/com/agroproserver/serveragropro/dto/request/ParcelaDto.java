@@ -20,10 +20,6 @@ public class ParcelaDto {
     @NotNull
     private List<SubparcelaRequestDto> subparcelas;
 
-    @NotNull
-    private List<RecintoRequestDto> recintos;
-
-    @NotNull
     private List<UsuarioParcelaRequestDto> usuariosParcela;
 
 }

@@ -48,11 +48,6 @@ public class ParcelaController {
         return parcelaService.findSubparcelasByReferenciaCatastral(referenciaCatastral);
     }
 
-    @GetMapping("/findRecintosByReferenciaCatastral/{referenciaCatastral}")
-    public ResponseEntity<?> findRecintosByReferenciaCatastral(@PathVariable String referenciaCatastral) {
-        return parcelaService.findRecintosByReferenciaCatastral(referenciaCatastral);
-    }
-
     @GetMapping("/findUsuariosInParcela/{referenciaCatastral}")
     public ResponseEntity<?> findUsuariosInParcela(@PathVariable String referenciaCatastral) {
         return parcelaService.findUsuariosInParcela(referenciaCatastral);

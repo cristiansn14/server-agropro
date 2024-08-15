@@ -1,7 +1,6 @@
 package com.agroproserver.serveragropro.dto.response;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -25,9 +24,4 @@ public class SubparcelaResponseDto {
 
     private String cultivo;
 
-    private Timestamp fechaAlta;
-
-    private Timestamp fechaModificacion;
-
-    private Timestamp fechaBaja;
 }

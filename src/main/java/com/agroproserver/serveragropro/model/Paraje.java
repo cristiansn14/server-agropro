@@ -1,5 +1,7 @@
 package com.agroproserver.serveragropro.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,9 +27,9 @@ import lombok.NoArgsConstructor;
 public class Paraje {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID")
-    private long id;
+    private UUID id;
  
     @NotBlank
     @Column(name = "NOMBRE")

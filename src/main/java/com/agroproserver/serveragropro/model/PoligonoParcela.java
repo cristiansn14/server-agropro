@@ -1,5 +1,7 @@
 package com.agroproserver.serveragropro.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,7 +28,7 @@ public class PoligonoParcela {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID")
-    private long id;
+    private UUID id;
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
@@ -40,7 +42,7 @@ public class PoligonoParcela {
 
     @NotNull
     @Column(name = "POLIGONO")
-    private long poligono;
+    private String poligono;
 
     @NotNull
     @Column(name = "PARCELA")

@@ -20,6 +20,18 @@ public class ParcelaRequestDto {
     private String referenciaCatastral;
 
     @NotBlank
+    private String poligono;
+
+    @NotBlank
+    private String parcela;
+
+    @NotNull
+    private String paraje;
+
+    @NotNull
+    private UUID idFinca;
+
+    @NotBlank
     private String clase;
 
     @NotBlank
@@ -28,21 +40,11 @@ public class ParcelaRequestDto {
     @NotNull
     private BigDecimal superficie;
 
-    private Long valorSuelo;
+    private BigDecimal valorSuelo;
 
-    private Long valorConstruccion;
+    private BigDecimal valorConstruccion;
 
-    private Long valorCatastral;
+    private BigDecimal valorCatastral;
 
-    private String añoValor;
-
-    @NotNull    
-    private Long poligonoParcela;
-
-    @NotNull
-    private UUID idFinca;
-
-    @NotNull
-    private Long paraje;
-
+    private String anoValor;
 }

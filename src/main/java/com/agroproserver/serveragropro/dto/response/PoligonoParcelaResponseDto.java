@@ -1,5 +1,7 @@
 package com.agroproserver.serveragropro.dto.response;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,9 +13,9 @@ import lombok.ToString;
 @ToString
 public class PoligonoParcelaResponseDto {
 
-    private long id;
+    private UUID id;
     
-    private long poligono;
+    private String poligono;
 
     private String parcela;
 

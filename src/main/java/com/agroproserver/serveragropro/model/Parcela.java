@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -41,18 +42,18 @@ public class Parcela {
     private BigDecimal superficie;
 
     @Column(name = "VALOR_SUELO")
-    private long valorSuelo;
+    private BigDecimal valorSuelo;
 
     @Column(name = "VALOR_CONSTRUCCION")
-    private long valorConstruccion;
+    private BigDecimal valorConstruccion;
 
     @Column(name = "VALOR_CATASTRAL")
-    private long valorCatastral;
+    private BigDecimal valorCatastral;
 
     @Column(name = "AÑO_VALOR")
     private String añoValor;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_POLIGONOPARCELA")
     private PoligonoParcela poligonoParcela;
 
@@ -75,7 +76,7 @@ public class Parcela {
     private Timestamp fechaBaja;  
 
     public Parcela (String referenciaCatastral, String clase, String usoPrincipal, BigDecimal superficie, 
-                    long valorSuelo, long valorConstruccion, long valorCatastral, String añoValor, 
+                    BigDecimal valorSuelo, BigDecimal valorConstruccion, BigDecimal valorCatastral, String añoValor, 
                     PoligonoParcela poligonoParcela, Finca finca, Paraje paraje, Timestamp fechaAlta) {
         this.referenciaCatastral = referenciaCatastral;
         this.clase = clase;
@@ -85,6 +86,18 @@ public class Parcela {
         this.valorConstruccion = valorConstruccion;
         this.valorCatastral = valorCatastral;
         this.añoValor = añoValor;
+        this.poligonoParcela = poligonoParcela;
+        this.finca = finca;
+        this.paraje = paraje;
+        this.fechaAlta = fechaAlta;
+    }
+
+    public Parcela (String referenciaCatastral, String clase, String usoPrincipal, BigDecimal superficie, 
+                    PoligonoParcela poligonoParcela, Finca finca, Paraje paraje, Timestamp fechaAlta) {
+        this.referenciaCatastral = referenciaCatastral;
+        this.clase = clase;
+        this.usoPrincipal = usoPrincipal;
+        this.superficie = superficie;
         this.poligonoParcela = poligonoParcela;
         this.finca = finca;
         this.paraje = paraje;

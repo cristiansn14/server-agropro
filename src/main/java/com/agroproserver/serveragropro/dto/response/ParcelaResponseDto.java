@@ -23,15 +23,15 @@ public class ParcelaResponseDto {
 
     private BigDecimal superficie;
 
-    private Long valorSuelo;
+    private BigDecimal valorSuelo;
 
-    private Long valorConstruccion;
+    private BigDecimal valorConstruccion;
 
-    private Long valorCatastral;
+    private BigDecimal valorCatastral;
 
     private String anoValor;
    
-    private long poligono;
+    private String poligono;
 
     private String parcela;
 

@@ -1,7 +1,6 @@
 package com.agroproserver.serveragropro.model;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -53,22 +52,11 @@ public class Subparcela {
     @JoinColumn(name = "ID_CULTIVO")
     private Cultivo cultivo;
 
-    @NotNull
-    @Column(name = "FECHA_ALTA")
-    private Timestamp fechaAlta;
-
-    @Column(name = "FECHA_MODIFICACION")
-    private Timestamp fechaModificacion;
-
-    @Column(name = "FECHA_BAJA")
-    private Timestamp fechaBaja;
-
-    public Subparcela (Parcela parcela, String subparcela, String intensidad, BigDecimal superficie, Cultivo cultivo, Timestamp fechaAlta) {
+    public Subparcela (Parcela parcela, String subparcela, String intensidad, BigDecimal superficie, Cultivo cultivo) {
         this.parcela = parcela;
         this.subparcela = subparcela;
         this.intensidad = intensidad;
         this.superficie = superficie;
         this.cultivo = cultivo;
-        this.fechaAlta = fechaAlta;
     }
 }
