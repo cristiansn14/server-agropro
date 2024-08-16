@@ -2,6 +2,7 @@ package com.agroproserver.serveragropro.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.agroproserver.serveragropro.payload.request.ChangePasswordRequest;
 import com.agroproserver.serveragropro.payload.request.LoginRequest;
 import com.agroproserver.serveragropro.payload.request.SignUpRequest;
 import com.agroproserver.serveragropro.service.AuthService;
@@ -32,5 +33,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult) {
         return authService.login(loginRequest, bindingResult);
-    }   
+    }
+
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest, BindingResult bindingResult) {
+        return authService.changePassword(changePasswordRequest, bindingResult);
+    }
+
 }

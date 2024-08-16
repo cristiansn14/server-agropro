@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,5 +41,10 @@ public class MovimientoController {
     @GetMapping("/findArchivoById/{idArchivo}")
     public ResponseEntity<?> findArchivoById(@PathVariable UUID idArchivo) {
         return movimientoService.findArchivoById(idArchivo);
+    }
+
+    @DeleteMapping("/eliminarMovimiento/{idMovimiento}")
+    public ResponseEntity<?> eliminarMovimiento(@PathVariable UUID idMovimiento){
+        return movimientoService.eliminarMovimiento(idMovimiento);
     }
 }

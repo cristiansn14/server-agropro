@@ -39,4 +39,12 @@ public interface UsuarioParcelaRepository extends JpaRepository<UsuarioParcela, 
 
     @Query("SELECT 100 - COALESCE(SUM(up.participacion), 0) FROM UsuarioParcela up WHERE up.parcelaConstruccion.referenciaCatastral = :referenciaCatastral AND up.fechaBaja IS NULL")
     Long getParticipacionDisponibleParcelaConstruccion(@Param("referenciaCatastral") String referenciaCatastral);
+
+    Boolean existsByUsuarioIdAndParcelaReferenciaCatastral (UUID idUsuario, String referenciaCatastral);
+
+    Boolean existsByUsuarioIdAndParcelaConstruccionReferenciaCatastral (UUID idUsuario, String referenciaCatastral);
+
+    UsuarioParcela findByUsuarioIdAndParcelaReferenciaCatastral (UUID idUsuario, String referenciaCatastral);
+
+    UsuarioParcela findByUsuarioIdAndParcelaConstruccionReferenciaCatastral (UUID idUsuario, String referenciaCatastral);
 }

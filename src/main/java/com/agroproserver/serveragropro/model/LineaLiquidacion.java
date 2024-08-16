@@ -1,7 +1,6 @@
 package com.agroproserver.serveragropro.model;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -14,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,15 +33,6 @@ public class LineaLiquidacion {
     @Column(name = "ID")
     private UUID id;
 
-    @Size(max = 100)
-    @Column(name = "CONCEPTO")
-    @NotNull
-    private String concepto;
-
-    @Column(name = "TIPO")
-    @NotNull
-    private String tipo;
-
     @NotNull
     @Column(name = "IMPORTE", precision = 10, scale = 2)
     private BigDecimal importe;
@@ -57,6 +46,14 @@ public class LineaLiquidacion {
     private Usuario usuario;
 
     @NotNull
-    @Column(name = "FECHA")
-    private Timestamp fecha;
+    @Column(name = "RECIBIDA")
+    private boolean recibida;
+
+    public boolean getRecibida() {
+        return this.recibida;
+    }
+    
+    public void setRecibida(boolean recibida) {
+        this.recibida = recibida;
+    } 
 }

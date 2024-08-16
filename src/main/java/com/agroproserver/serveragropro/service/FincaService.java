@@ -232,38 +232,66 @@ public class FincaService {
             return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ningún usuario a la finca"));
         } else {
             for (UsuarioFincaRequestDto usuarioFincaDto : usuariosFincaDto) {
+
                 if (usuarioFincaDto.getOnzas() <= 0) {
                     return ResponseEntity.badRequest().body(new MessageResponse("Las onzas no pueden ser 0"));
-                }               
-                Usuario usuario = usuarioRepository.findById(usuarioFincaDto.getUsuario())
-                    .orElseThrow(() -> new RuntimeException("No se ha encontrado ningun usuario"));
-                Rol rol = new Rol();
-                Finca finca = fincaRepository.findById(usuarioFincaDto.getFinca())
-                    .orElseThrow(() -> new RuntimeException("No se ha encontrado ninguna finca."));
+                }  
 
-                switch (usuarioFincaDto.getRol()) {
-                    case "ADMINISTRADOR":
-                        rol = rolRepository.findByRol(ERol.ADMINISTRADOR)
-                            .orElseThrow(() -> new RuntimeException("Rol ADMINISTRADOR no encontrado"));
-                    break;
-                
-                    default:
-                        rol = rolRepository.findByRol(ERol.PROPIETARIO)
-                            .orElseThrow(() -> new RuntimeException("Rol PROPIETARIO no encontrado"));
-                    break;
-                }
+                if (usuarioFincaRepository.existsByUsuarioIdAndFincaId(usuarioFincaDto.getUsuario(), usuarioFincaDto.getFinca())) {
+
+                    UsuarioFinca usuarioFinca = usuarioFincaRepository.findByUsuarioIdAndFincaId(usuarioFincaDto.getUsuario(), usuarioFincaDto.getFinca());
+
+                    if (usuarioFinca.getFechaBaja() == null) {
+                        return ResponseEntity.badRequest().body(new MessageResponse("El usuario ya está registrado en la finca."));
+                    }
+
+                    Rol rol = new Rol();
+                    switch (usuarioFincaDto.getRol()) {
+                        case "ADMINISTRADOR":
+                            rol = rolRepository.findByRol(ERol.ADMINISTRADOR)
+                                .orElseThrow(() -> new RuntimeException("Rol ADMINISTRADOR no encontrado"));
+                        break;
                     
-                UsuarioFinca usuarioFinca = new UsuarioFinca(
-                    usuario,
-                    finca,
-                    rol,
-                    usuarioFincaDto.getOnzas(),
-                    new Timestamp(System.currentTimeMillis())
-                );
+                        default:
+                            rol = rolRepository.findByRol(ERol.PROPIETARIO)
+                                .orElseThrow(() -> new RuntimeException("Rol PROPIETARIO no encontrado"));
+                        break;
+                    }
+                    usuarioFinca.setOnzas(usuarioFincaDto.getOnzas());
+                    usuarioFinca.setRol(rol);
+                    usuarioFinca.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
+                    usuarioFinca.setFechaBaja(null);
+                    usuarioFincaRepository.save(usuarioFinca);
+                    
+                } else {
+                    Usuario usuario = usuarioRepository.findById(usuarioFincaDto.getUsuario())
+                        .orElseThrow(() -> new RuntimeException("No se ha encontrado ningun usuario"));
+                    Rol rol = new Rol();
+                    Finca finca = fincaRepository.findById(usuarioFincaDto.getFinca())
+                        .orElseThrow(() -> new RuntimeException("No se ha encontrado ninguna finca."));
 
-                usuarioFincaRepository.save(usuarioFinca);
-            }
-            
+                    switch (usuarioFincaDto.getRol()) {
+                        case "ADMINISTRADOR":
+                            rol = rolRepository.findByRol(ERol.ADMINISTRADOR)
+                                .orElseThrow(() -> new RuntimeException("Rol ADMINISTRADOR no encontrado"));
+                        break;
+                    
+                        default:
+                            rol = rolRepository.findByRol(ERol.PROPIETARIO)
+                                .orElseThrow(() -> new RuntimeException("Rol PROPIETARIO no encontrado"));
+                        break;
+                    }
+                        
+                    UsuarioFinca usuarioFinca = new UsuarioFinca(
+                        usuario,
+                        finca,
+                        rol,
+                        usuarioFincaDto.getOnzas(),
+                        new Timestamp(System.currentTimeMillis())
+                    );
+                    usuarioFincaRepository.save(usuarioFinca);
+                }               
+            }           
             return ResponseEntity.ok(new MessageResponse("Se han añadido los usuarios introducidos correctamente"));
         }
     }

@@ -19,6 +19,6 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, UUID>{
 
     List<Movimiento> findByFincaId(UUID idFinca);
 
-    @Query("SELECT SUM(m.importe) FROM Movimiento m WHERE m.fecha BETWEEN :fechaDesde AND :fechaHasta")
-    BigDecimal sumImportesBetweenDates(@Param("fechaDesde") Date fechaDesde, @Param("fechaHasta") Date fechaHasta);
+    @Query("SELECT SUM(m.importe) FROM Movimiento m WHERE DATE(m.fecha) BETWEEN :fechaDesde AND :fechaHasta AND m.finca.id = :fincaId")
+    BigDecimal sumImportesBetweenDates(@Param("fechaDesde") Date fechaDesde, @Param("fechaHasta") Date fechaHasta, @Param("fincaId") UUID fincaId);
 }

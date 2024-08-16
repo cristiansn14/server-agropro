@@ -61,7 +61,7 @@ public class MovimientoService {
             }
 
             BigDecimal importeAjustado = movimientoDto.getImporte();
-            if ("gasto".equalsIgnoreCase(movimientoDto.getTipo())) {
+            if ("gasto".equalsIgnoreCase(movimientoDto.getTipo()) && importeAjustado.compareTo(BigDecimal.ZERO) >= 0) {
                 importeAjustado = importeAjustado.negate();
             }
 
@@ -90,8 +90,18 @@ public class MovimientoService {
             }
 
             movimientoRepository.save(movimiento);
-            return ResponseEntity.ok(new MessageResponse("La cuenta ha sido añadida correctamente"));
+            return ResponseEntity.ok(new MessageResponse("El movimiento ha sido añadido correctamente"));
         }
+    }
+
+    @Transactional
+    public ResponseEntity<?> eliminarMovimiento(UUID idMovimiento) {
+
+        Movimiento movimiento = movimientoRepository.findById(idMovimiento)
+            .orElseThrow(() -> new RuntimeException("Archivo no encontrado"));
+
+        movimientoRepository.delete(movimiento);
+        return ResponseEntity.ok(new MessageResponse("El movimiento ha sido añadido correctamente"));
     }
 
     @Transactional

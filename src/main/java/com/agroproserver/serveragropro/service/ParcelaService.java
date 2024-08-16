@@ -94,12 +94,13 @@ public class ParcelaService {
             if (parcelaRepository.existsById(parcelaDto.getParcela().getReferenciaCatastral())) {
                 return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela ya esta registrada"));
             }
+
             if (parcelaConstruccionRepository.existsById(parcelaDto.getParcela().getReferenciaCatastral())) {
-                return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela ya esta registrada"));
+                return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela construccion ya esta registrada"));
             }
 
             Finca finca = fincaRepository.findById(parcelaDto.getParcela().getIdFinca())
-                .orElseThrow(() -> new RuntimeException("Finca no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Finca no encontrada"));          
 
             PoligonoParcela poligonoParcela = new PoligonoParcela();
             if (poligonoParcelaRepository.existsByProvinciaIdAndMunicipioIdAndPoligonoAndParcela(finca.getProvincia().getId(), finca.getMunicipio().getIdMunicipio(), parcelaDto.getParcela().getPoligono(), parcelaDto.getParcela().getParcela())) {
@@ -136,9 +137,8 @@ public class ParcelaService {
                 paraje,
                 new Timestamp(System.currentTimeMillis())
             );
-
             parcelaRepository.save(parcela);
-
+            
             for (SubparcelaRequestDto subparcelaDto : parcelaDto.getSubparcelas()) {
                 Cultivo cultivo = new Cultivo();
                 if (cultivoRepository.existsByCodigo(subparcelaDto.getCodigoCultivo())) {
@@ -537,28 +537,50 @@ public class ParcelaService {
                 if (usuarioParcelaDto.getParticipacion() <= 0 || usuarioParcelaDto.getParticipacion() > 100) {
                     return ResponseEntity.badRequest().body(new MessageResponse("La participacion tiene que estar entre 0 y 100"));
                 }
+                
+                if (parcela != null && usuarioParcelaRepository.existsByUsuarioIdAndParcelaReferenciaCatastral(usuarioParcelaDto.getUsuario(), usuarioParcelaDto.getParcela())) {
+                    UsuarioParcela usuarioParcela = usuarioParcelaRepository.findByUsuarioIdAndParcelaReferenciaCatastral(usuarioParcelaDto.getUsuario(), usuarioParcelaDto.getParcela());
+                    if (usuarioParcela.getFechaBaja() == null) {
+                        return ResponseEntity.badRequest().body(new MessageResponse("El usuario ya está registrado en la parcela"));
+                    }
+                    usuarioParcela.setParticipacion(usuarioParcelaDto.getParticipacion());
+                    usuarioParcela.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
+                    usuarioParcela.setFechaBaja(null);
+                    usuarioParcelaRepository.save(usuarioParcela);
+                }
+                if (parcelaConstruccion != null && usuarioParcelaRepository.existsByUsuarioIdAndParcelaConstruccionReferenciaCatastral(usuarioParcelaDto.getUsuario(), usuarioParcelaDto.getParcela())) {
+                    UsuarioParcela usuarioParcela = usuarioParcelaRepository.findByUsuarioIdAndParcelaConstruccionReferenciaCatastral(usuarioParcelaDto.getUsuario(), usuarioParcelaDto.getParcela());
+                    
+                    if (usuarioParcela.getFechaBaja() == null) {
+                        return ResponseEntity.badRequest().body(new MessageResponse("El usuario ya está registrado en la parcela"));
+                    }
 
-                Usuario usuario = usuarioRepository.findById(usuarioParcelaDto.getUsuario())
+                    usuarioParcela.setParticipacion(usuarioParcelaDto.getParticipacion());
+                    usuarioParcela.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
+                    usuarioParcela.setFechaBaja(null);
+                    usuarioParcelaRepository.save(usuarioParcela);
+                } else {
+                    Usuario usuario = usuarioRepository.findById(usuarioParcelaDto.getUsuario())
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-                UsuarioParcela usuarioParcela = new UsuarioParcela();
-                if (parcela != null) {
-                    usuarioParcela = new UsuarioParcela (
-                        usuario,
-                        parcela,
-                        usuarioParcelaDto.getParticipacion(),
-                        new Timestamp(System.currentTimeMillis())
-                    );
-                } else {
-                    usuarioParcela = new UsuarioParcela (
-                        usuario,
-                        parcelaConstruccion,
-                        usuarioParcelaDto.getParticipacion(),
-                        new Timestamp(System.currentTimeMillis())
-                    );
-                }
-                
-                usuarioParcelaRepository.save(usuarioParcela);
+                    UsuarioParcela usuarioParcela = new UsuarioParcela();
+                    if (parcela != null) {
+                        usuarioParcela = new UsuarioParcela (
+                            usuario,
+                            parcela,
+                            usuarioParcelaDto.getParticipacion(),
+                            new Timestamp(System.currentTimeMillis())
+                        );
+                    } else {
+                        usuarioParcela = new UsuarioParcela (
+                            usuario,
+                            parcelaConstruccion,
+                            usuarioParcelaDto.getParticipacion(),
+                            new Timestamp(System.currentTimeMillis())
+                        );
+                        usuarioParcelaRepository.save(usuarioParcela);
+                    }
+                }        
             }
         }
 

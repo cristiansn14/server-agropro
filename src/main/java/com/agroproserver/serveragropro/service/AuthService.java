@@ -20,6 +20,7 @@ import org.springframework.validation.BindingResult;
 import com.agroproserver.serveragropro.model.ERol;
 import com.agroproserver.serveragropro.model.Rol;
 import com.agroproserver.serveragropro.model.Usuario;
+import com.agroproserver.serveragropro.payload.request.ChangePasswordRequest;
 import com.agroproserver.serveragropro.payload.request.LoginRequest;
 import com.agroproserver.serveragropro.payload.request.SignUpRequest;
 import com.agroproserver.serveragropro.payload.response.JwtResponse;
@@ -140,5 +141,28 @@ public class AuthService {
         return ResponseEntity.ok(
             new JwtResponse(jwt, userDetailsImpl.getId(), userDetailsImpl.getUsername(), userDetailsImpl.getEmail(), roles)
         );
+    }
+
+    @Transactional
+    public ResponseEntity<?> changePassword(ChangePasswordRequest changePasswordRequest, BindingResult bindingResult) {
+
+        if(bindingResult.hasErrors()){
+            return ResponseEntity.badRequest().body(new MessageResponse("Campos erróneos"));
+        }
+
+        if (!changePasswordRequest.getPassword1().equals(changePasswordRequest.getPassword2())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Las contraseñas no coinciden"));
+        }
+
+        Usuario usuario = usuarioRepository.findById(changePasswordRequest.getIdUsuario()).orElse(null);
+        if (usuario == null || usuario.getFechaBaja() != null){
+            return ResponseEntity.badRequest()
+                .body(new MessageResponse("Su usuario ha sido eliminado de nuestra página, por favor póngase en contacto con el administrador"));
+        }
+
+        usuario.setPassword(passwordEncoder.encode(changePasswordRequest.getPassword1()));
+        usuarioRepository.save(usuario);
+
+        return ResponseEntity.ok(new MessageResponse("La contraseña se ha cambiado correctamente."));
     }
 }
