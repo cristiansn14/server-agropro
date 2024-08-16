@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.agroproserver.serveragropro.dto.response.ComunidadDto;
 import com.agroproserver.serveragropro.dto.response.MunicipioDto;
@@ -50,6 +51,7 @@ public class StaticDataService {
     @Autowired
     private CultivoRepository cultivoRepository;
 
+    @Transactional
     public ResponseEntity<?> findAllComunidades () {
         List<ComunidadDto> comunidades = comunidadRepository.findAll().stream()
             .map(comunidad -> new ComunidadDto(
@@ -60,6 +62,7 @@ public class StaticDataService {
         return ResponseEntity.ok(comunidades);
     }
 
+    @Transactional
     public ResponseEntity<?> findAllProvincias () {
         List<ProvinciaDto> provincias = provinciaRepository.findAll().stream()
             .map(provincia -> new ProvinciaDto(
@@ -71,6 +74,7 @@ public class StaticDataService {
         return ResponseEntity.ok(provincias);
     }
 
+    @Transactional
     public ResponseEntity<?> findAllProvinciasByIdComunidad (Long idComunidad) {
         List<ProvinciaDto> provincias = provinciaRepository.findByComunidadId(idComunidad).stream()
             .map(provincia -> new ProvinciaDto(
@@ -82,6 +86,7 @@ public class StaticDataService {
         return ResponseEntity.ok(provincias);
     }
 
+    @Transactional
     public ResponseEntity<?> findAllMunicipiosByIdProvincia (Long idProvincia) {
         List<MunicipioDto> municipios = municipioRepository.findByProvinciaId(idProvincia).stream()
             .map(municipio -> new MunicipioDto(
@@ -95,6 +100,7 @@ public class StaticDataService {
         return ResponseEntity.ok(municipios);
     }
 
+    @Transactional
     public ResponseEntity<?> findMunicipioByNombreAndProvincia (String municipio, String provincia) {
         Municipio foundMunicipio = municipioRepository.findByNombreAndProvinciaNombre(municipio, provincia);
         MunicipioDto municipioDto = new MunicipioDto(
@@ -107,6 +113,7 @@ public class StaticDataService {
         return ResponseEntity.ok(municipioDto);
     }
 
+    @Transactional
     public ResponseEntity<?> findPoligonoParcelaByFinca (UUID idFinca) {
         Finca finca = fincaRepository.findById(idFinca)
                 .orElseThrow(() -> new RuntimeException("Finca no encontrada")); 
@@ -120,6 +127,7 @@ public class StaticDataService {
             return ResponseEntity.ok(poligonosParcela);
     }
 
+    @Transactional
     public ResponseEntity<?> findParajeByFinca (UUID idFinca) {
         Finca finca = fincaRepository.findById(idFinca)
             .orElseThrow(() -> new RuntimeException("Finca no encontrada")); 
@@ -132,11 +140,13 @@ public class StaticDataService {
             return ResponseEntity.ok(parajes);
     }
 
+    @Transactional
     public ResponseEntity<?> findCultivos() {
         List<Cultivo> cultivos = cultivoRepository.findAll();
         return ResponseEntity.ok(cultivos);
     }
 
+    @Transactional
     public ResponseEntity<?> getNombreComunidadById (long idComunidad) {
         Comunidad comunidad = comunidadRepository.findById(idComunidad)
             .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
@@ -149,6 +159,7 @@ public class StaticDataService {
         return ResponseEntity.ok(comunidadDto);
     }
 
+    @Transactional
     public ResponseEntity<?> getNombreProvinciaById (long idProvincia) {
         Provincia provincia = provinciaRepository.findById(idProvincia)
             .orElseThrow(() -> new RuntimeException("Provincia no encontrada"));
@@ -162,6 +173,7 @@ public class StaticDataService {
         return ResponseEntity.ok(provinciaDto);
     }
 
+    @Transactional
     public ResponseEntity<?> getNombreMunicipioById (long idMunicipio) {
         Municipio municipio = municipioRepository.findById(idMunicipio)
             .orElseThrow(() -> new RuntimeException("Municipio no encontrada"));

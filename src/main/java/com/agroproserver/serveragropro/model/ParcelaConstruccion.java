@@ -53,7 +53,6 @@ public class ParcelaConstruccion {
     @Column(name = "TIPO_REFORMA")
     private String tipoReforma;
 
-    @NotNull
     @Column(name = "FECHA_REFORMA")
     private Date fechaReforma;
 

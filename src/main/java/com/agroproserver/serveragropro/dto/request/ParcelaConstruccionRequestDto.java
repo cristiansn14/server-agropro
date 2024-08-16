@@ -1,6 +1,7 @@
 package com.agroproserver.serveragropro.dto.request;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.UUID;
 
 import jakarta.validation.constraints.NotBlank;
@@ -39,6 +40,6 @@ public class ParcelaConstruccionRequestDto {
 
     private String tipoReforma;
 
-    private String fechaReforma;
+    private Date fechaReforma;
 
 }

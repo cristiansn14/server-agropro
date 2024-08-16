@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpHeaders;
@@ -39,6 +40,7 @@ public class MovimientoService {
     @Autowired
     ArchivoRepository archivoRepository;
 
+    @Transactional
     public ResponseEntity<?> crearMovimiento(MovimientoRequestDto movimientoDto, MultipartFile documento, BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
@@ -92,6 +94,7 @@ public class MovimientoService {
         }
     }
 
+    @Transactional
     public ResponseEntity<?> findByFincaId(UUID idFinca) {
 
         List<Movimiento> movimientos = movimientoRepository.findByFincaId(idFinca);
@@ -123,6 +126,7 @@ public class MovimientoService {
         }
     }
 
+    @Transactional
     public ResponseEntity<?> findArchivoById(UUID idArchivo) {
 
         Archivo archivo = archivoRepository.findById(idArchivo)

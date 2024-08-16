@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
 import com.agroproserver.serveragropro.model.ERol;
@@ -51,6 +52,7 @@ public class AuthService {
     @Autowired
     private EmailService emailService;
 
+    @Transactional
     public ResponseEntity<?> signup(@Valid List<SignUpRequest> signUpRequests, BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()){
@@ -111,6 +113,7 @@ public class AuthService {
         return ResponseEntity.ok(new MessageResponse("Usuarios registrados correctamente"));
     }
 
+    @Transactional
     public ResponseEntity<?> login(@Valid LoginRequest loginRequest, BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()){

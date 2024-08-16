@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,6 +69,7 @@ public class FincaService {
     @Autowired
     MunicipioRepository municipioRepository;
 
+    @Transactional
     public ResponseEntity<?> findById(UUID idFinca) {
         
         Finca finca = fincaRepository.findById(idFinca)
@@ -88,6 +90,7 @@ public class FincaService {
         return ResponseEntity.ok(fincaDto);
     }
 
+    @Transactional
     public ResponseEntity<?> getParcelasByIdFinca(UUID idFinca) {
         
         List<Parcela> parcelas = parcelaRepository.findByFincaId(idFinca);
@@ -107,6 +110,7 @@ public class FincaService {
         return ResponseEntity.ok(referenciaParcelas);               
     }
 
+    @Transactional
     public ResponseEntity<?> guardarFinca(FincaRequestDto fincaDto, BindingResult bindingResult) {
         
         if(bindingResult.hasErrors()){
@@ -118,6 +122,9 @@ public class FincaService {
             if (fincaRepository.existsByNombre(fincaDto.getNombre())) {
                 return ResponseEntity.badRequest().body(new MessageResponse("Error, la finca ya existe"));
             }
+            if (fincaDto.getOnzas() <= 0) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Las onzas no pueden ser 0"));
+            }
 
             Comunidad comunidad = comunidadRepository.findById(fincaDto.getComunidad())
                 .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
@@ -125,7 +132,7 @@ public class FincaService {
                 .orElseThrow(() -> new RuntimeException("Provincia no encontrada"));
             Municipio municipio = municipioRepository.findById(fincaDto.getMunicipio())
                 .orElseThrow(() -> new RuntimeException("Municipio no encontrado"));
-
+            
             Finca finca = new Finca (
                 fincaDto.getNombre(),
                 fincaDto.getOnzas(),
@@ -157,6 +164,7 @@ public class FincaService {
         }
     }
 
+    @Transactional
     public ResponseEntity<?> editarFinca (FincaRequestDto fincaDto, BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()){
@@ -164,41 +172,57 @@ public class FincaService {
         } else if (fincaDto == null) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha modificado ninguna finca"));
         } else {
+            if (fincaDto.getOnzas() <= 0) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Las onzas no pueden ser 0"));
+            }
+
+            Boolean actF = false;
             Finca finca = fincaRepository.findById(fincaDto.getId())
                 .orElseThrow(() -> new RuntimeException("Finca no encontrada"));
             
-            if (!fincaDto.getNombre().equals(finca.getNombre())) {
-                finca.setOnzas(fincaDto.getOnzas());
-            }
-            if (fincaDto.getOnzas() != finca.getOnzas()) {
+            if (!fincaDto.getNombre().isEmpty() && !fincaDto.getNombre().equals(finca.getNombre())) {
                 finca.setNombre(fincaDto.getNombre());
+                actF = true;               
+            }
+
+            if (fincaDto.getOnzas() != finca.getOnzas()) {
+                finca.setOnzas(fincaDto.getOnzas());
+                actF = true; 
             }
 
             Comunidad comunidad = comunidadRepository.findById(fincaDto.getComunidad())
                 .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
             if (comunidad != finca.getComunidad()) {
                 finca.setComunidad(comunidad);
+                actF = true; 
             }
 
             Provincia provincia = provinciaRepository.findById(fincaDto.getProvincia())
                     .orElseThrow(() -> new RuntimeException("Provincia no encontrada"));
             if (provincia != finca.getProvincia()) {
                 finca.setProvincia(provincia);
+                actF = true; 
             }    
             
             Municipio municipio = municipioRepository.findById(fincaDto.getMunicipio())
                     .orElseThrow(() -> new RuntimeException("Municipio no encontrado"));
             if (municipio != finca.getMunicipio()) {
                 finca.setMunicipio(municipio);
+                actF = true; 
             }
 
-            finca.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
+            if (actF) { 
+                finca.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
+                fincaRepository.save(finca);
+                return ResponseEntity.ok(new MessageResponse("La finca " + finca.getNombre() + " se ha modificado correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+            }   
             
-            fincaRepository.save(finca);
-            return ResponseEntity.ok(new MessageResponse("La finca " + finca.getNombre() + " se ha modificado correctamente"));
         }
     }    
 
+    @Transactional
     public ResponseEntity<?> addUsuariosFinca (List<UsuarioFincaRequestDto> usuariosFincaDto, BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()){
@@ -207,7 +231,10 @@ public class FincaService {
         if (usuariosFincaDto == null) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ningún usuario a la finca"));
         } else {
-            usuariosFincaDto.forEach(usuarioFincaDto -> {               
+            for (UsuarioFincaRequestDto usuarioFincaDto : usuariosFincaDto) {
+                if (usuarioFincaDto.getOnzas() <= 0) {
+                    return ResponseEntity.badRequest().body(new MessageResponse("Las onzas no pueden ser 0"));
+                }               
                 Usuario usuario = usuarioRepository.findById(usuarioFincaDto.getUsuario())
                     .orElseThrow(() -> new RuntimeException("No se ha encontrado ningun usuario"));
                 Rol rol = new Rol();
@@ -235,12 +262,13 @@ public class FincaService {
                 );
 
                 usuarioFincaRepository.save(usuarioFinca);
-            });
+            }
             
             return ResponseEntity.ok(new MessageResponse("Se han añadido los usuarios introducidos correctamente"));
         }
     }
 
+    @Transactional
     public ResponseEntity<?> editarUsuarioFinca (UsuarioFincaDto usuarioFincaDto, BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()){
@@ -249,12 +277,19 @@ public class FincaService {
         if (usuarioFincaDto == null) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ningún usuario a la finca"));
         } else {
+            if (usuarioFincaDto.getOnzas() <= 0) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Las onzas no pueden ser 0"));
+            }
+
+            Boolean actUF = false;
             UsuarioFinca usuarioFinca = usuarioFincaRepository.findById(usuarioFincaDto.getId())
                 .orElseThrow(() -> new RuntimeException("Usuario finca no encontrado"));
             
             if (usuarioFincaDto.getOnzas() != usuarioFinca.getOnzas()) {
                 usuarioFinca.setOnzas(usuarioFincaDto.getOnzas());
+                actUF = true;
             }
+
             if (!usuarioFincaDto.getRol().equals(usuarioFinca.getRol().getRol().toString())) {
                 Rol rol = new Rol();
 
@@ -271,13 +306,21 @@ public class FincaService {
                 }
 
                 usuarioFinca.setRol(rol);
+                actUF = true;
             }
-            usuarioFinca.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
-            usuarioFincaRepository.save(usuarioFinca);
-            return ResponseEntity.ok(new MessageResponse("El usuario " + usuarioFinca.getUsuario().getUsername() + " de la finca " + usuarioFinca.getFinca().getNombre() + " se ha modificado correctamente"));
+
+            if (actUF) {
+                usuarioFinca.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
+                usuarioFincaRepository.save(usuarioFinca);
+                return ResponseEntity.ok(new MessageResponse("El usuario " + usuarioFinca.getUsuario().getUsername() + " de la finca " + usuarioFinca.getFinca().getNombre() + " se ha modificado correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+            }
+            
         }   
     }
 
+    @Transactional
     public ResponseEntity<?> eliminarUsuarioFinca (UsuarioFincaDto usuarioFincaDto) {
 
         UsuarioFinca usuarioFinca = usuarioFincaRepository.findById(usuarioFincaDto.getId())
@@ -286,9 +329,10 @@ public class FincaService {
         usuarioFinca.setFechaBaja(new Timestamp(System.currentTimeMillis()));
         usuarioFincaRepository.save(usuarioFinca);
         
-        return ResponseEntity.ok(new MessageResponse("El usuario " + usuarioFinca.getUsuario().getUsername() + " de la finca " + usuarioFinca.getFinca().getNombre() + " se ha elliminado correctamente"));
+        return ResponseEntity.ok(new MessageResponse("El usuario " + usuarioFinca.getUsuario().getUsername() + " de la finca " + usuarioFinca.getFinca().getNombre() + " se ha eliminado correctamente"));
     }
 
+    @Transactional
     public ResponseEntity<?> findAllFincasByUsuarioId (UUID idUsuario) {
         List<Finca> fincas = fincaRepository.findByUsuarioId(idUsuario);
         if (fincas != null) {
@@ -348,6 +392,7 @@ public class FincaService {
         return ResponseEntity.ok(usuariosFincaInfo);
     }
 
+    @Transactional
     public ResponseEntity<?> findUsuarioFincaById (UUID idUsuarioFinca) {
         
         UsuarioFinca usuarioFinca = usuarioFincaRepository.findById(idUsuarioFinca)
@@ -369,6 +414,7 @@ public class FincaService {
         return ResponseEntity.ok(usuarioFincaInfo);
     }
 
+    @Transactional
     public ResponseEntity<?> getOnzasDisponibles (UUID idFinca) {
         return ResponseEntity.ok(fincaRepository.getOnzasDisponibles(idFinca));
     }

@@ -63,6 +63,7 @@ public class UsuarioService {
     @Autowired
     RepresentanteRepository representanteRepository;
 
+    @Transactional
     public ResponseEntity<?> findById(UUID id) {
         
         Usuario usuario = usuarioRepository.findById(id)
@@ -107,10 +108,12 @@ public class UsuarioService {
         return ResponseEntity.ok(usuarioDto);
     }
     
+    @Transactional
     public Optional<Usuario> getByUsername(String username){
         return usuarioRepository.findByUsername(username);
     }
 
+    @Transactional
     public ResponseEntity<byte[]> getFotoPerfil(UUID idUsuario){
         Usuario usuario = usuarioRepository.findById(idUsuario)
             .orElseThrow(() -> new RuntimeException("No se ha encontrado ningun usuario."));
@@ -135,18 +138,22 @@ public class UsuarioService {
         }
     }
 
+    @Transactional
     public boolean existsByUsername(String username){
         return usuarioRepository.existsByUsername(username);
     }
 
+    @Transactional
     public boolean existsByEmail(String email){
         return usuarioRepository.existsByEmail(email);
     }
 
+    @Transactional
     public void save(Usuario usuario){
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
     public ResponseEntity<?> findUsuariosNotInFinca(UUID fincaId) {
         List<UsuarioResponseDto> usuariosDto = usuarioRepository.findUsuariosNotInFinca(fincaId).stream()
         .map(usuario -> new UsuarioResponseDto(
@@ -161,6 +168,7 @@ public class UsuarioService {
         return ResponseEntity.ok(usuariosDto);
     }
 
+    @Transactional
     public ResponseEntity<?> findUsuariosInFinca(UUID fincaId) {
         List<UsuarioResponseDto> usuariosDto = usuarioRepository.findUsuariosInFinca(fincaId).stream()
         .map(usuario -> new UsuarioResponseDto(
@@ -175,6 +183,7 @@ public class UsuarioService {
         return ResponseEntity.ok(usuariosDto);
     }
 
+    @Transactional
     public ResponseEntity<?> editarUsuario(UsuarioRequestDto usuarioRequestDto, MultipartFile foto, BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()){
@@ -182,47 +191,58 @@ public class UsuarioService {
         } else if (usuarioRequestDto == null) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha modificado ningun usuario"));
         } else {
+            Boolean actU = false;
             Usuario usuario = usuarioRepository.findById(usuarioRequestDto.getId())
                 .orElseThrow(() -> new RuntimeException("No se ha encontrado ningun usuario."));
             
-            if (!usuarioRequestDto.getNombre().equals(usuario.getNombre())) {
+            if (!usuarioRequestDto.getNombre().isBlank() && !usuarioRequestDto.getNombre().equals(usuario.getNombre())) {
                 usuario.setNombre(usuarioRequestDto.getNombre());
+                actU = true;
             }
-            if (!usuarioRequestDto.getApellido1().equals(usuario.getApellido1())) {
+            if (!usuarioRequestDto.getApellido1().isBlank() && !usuarioRequestDto.getApellido1().equals(usuario.getApellido1())) {
                 usuario.setApellido1(usuarioRequestDto.getApellido1());
+                actU = true;
             }
-            if (!usuarioRequestDto.getApellido2().equals(usuario.getApellido2())) {
+            if (!usuarioRequestDto.getApellido2().isBlank() && !usuarioRequestDto.getApellido2().equals(usuario.getApellido2())) {
                 usuario.setApellido2(usuarioRequestDto.getApellido2());
+                actU = true;
             }
-            if (!usuarioRequestDto.getUsername().equals(usuario.getUsername())) {
+            if (!usuarioRequestDto.getUsername().isBlank() && !usuarioRequestDto.getUsername().equals(usuario.getUsername())) {
                 if (usuarioRepository.existsByUsername(usuarioRequestDto.getUsername())) {
                     return ResponseEntity.badRequest().body(new MessageResponse("Error, el nombre de usuario ya existe."));
                 }
-                usuario.setUsername(usuarioRequestDto.getUsername());         
+                usuario.setUsername(usuarioRequestDto.getUsername());
+                actU = true;       
             }
-            if (!usuarioRequestDto.getEmail().equals(usuario.getEmail())) {
+            if (!usuarioRequestDto.getEmail().isBlank() && !usuarioRequestDto.getEmail().equals(usuario.getEmail())) {
                 if (usuarioRepository.existsByEmail(usuarioRequestDto.getEmail())) {
                     return ResponseEntity.badRequest().body(new MessageResponse("Error, el email ya esta registrado."));
                 }
                 usuario.setEmail(usuarioRequestDto.getEmail());
+                actU = true;
             }
-            if (!usuarioRequestDto.getDni().isBlank() && !usuarioRequestDto.getDni().equals(usuario.getDni())) {
+            if (!usuarioRequestDto.getDni().equals(usuario.getDni())) {
                 usuario.setDni(usuarioRequestDto.getDni());
+                actU = true;
             }
-            if (!usuarioRequestDto.getTelefono().isBlank() && !usuarioRequestDto.getTelefono().equals(usuario.getTelefono())) {
+            if (!usuarioRequestDto.getTelefono().equals(usuario.getTelefono())) {
                 usuario.setTelefono(usuarioRequestDto.getTelefono());
+                actU = true;
             }
-            if (!usuarioRequestDto.getDireccion().isBlank() && !usuarioRequestDto.getDireccion().equals(usuario.getDireccion())) {
+            if (!usuarioRequestDto.getDireccion().equals(usuario.getDireccion())) {
                 usuario.setDireccion(usuarioRequestDto.getDireccion());
+                actU = true;
             }
-            if (!usuarioRequestDto.getCodigoPostal().isBlank() && !usuarioRequestDto.getCodigoPostal().equals(usuario.getCodigoPostal())) {
+            if (!usuarioRequestDto.getCodigoPostal().equals(usuario.getCodigoPostal())) {
                 usuario.setCodigoPostal(usuarioRequestDto.getCodigoPostal());
+                actU = true;
             }
             if (usuarioRequestDto.getComunidad() != null) {
                 Comunidad comunidad = comunidadRepository.findById(usuarioRequestDto.getComunidad())
                     .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
                 if (comunidad != usuario.getComunidad()) {
                     usuario.setComunidad(comunidad);
+                    actU = true;
                 }               
             }
             if (usuarioRequestDto.getProvincia() != null) {
@@ -230,6 +250,7 @@ public class UsuarioService {
                     .orElseThrow(() -> new RuntimeException("Provincia no encontrada"));
                 if (provincia != usuario.getProvincia()) {
                     usuario.setProvincia(provincia);
+                    actU = true;
                 }               
             }
             if (usuarioRequestDto.getMunicipio() != null) {
@@ -237,6 +258,7 @@ public class UsuarioService {
                     .orElseThrow(() -> new RuntimeException("Municipio no encontrado"));
                 if (municipio != usuario.getMunicipio()) {
                     usuario.setMunicipio(municipio);
+                    actU = true;
                 }               
             }
             if (foto != null && !foto.isEmpty()) {
@@ -250,17 +272,22 @@ public class UsuarioService {
                     archivoRepository.delete(usuario.getFoto());        
                     usuario.setFoto(archivo);
                     archivoRepository.save(archivo);
+                    actU = true;
                 } catch (IOException e) {
                     e.printStackTrace();
                     throw new RuntimeException("Error al procesar la imagen", e);
                 }
             }
-
-            usuarioRepository.save(usuario);
-            return ResponseEntity.ok(new MessageResponse("El usuario " + usuario.getUsername() + " se ha modificado correctamente"));
+            if (actU) {
+                usuarioRepository.save(usuario);
+                return ResponseEntity.ok(new MessageResponse("El usuario " + usuario.getUsername() + " se ha modificado correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+            }
         }
     }
 
+    @Transactional
     public ResponseEntity<?> añadirRepresentante (RepresentanteRequest representanteDto, BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()){
@@ -286,6 +313,7 @@ public class UsuarioService {
         }
     }
 
+    @Transactional
     public ResponseEntity<?> editarRepresentante (RepresentanteResponse representanteDto, BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()){
@@ -293,33 +321,63 @@ public class UsuarioService {
         } else if (representanteDto == null) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ningun representante"));
         } else {
+            Boolean actR = false;
             Representante representante = representanteRepository.findById(representanteDto.getId())
                 .orElseThrow(() -> new RuntimeException("Representante no encontrado"));
 
-            if (!representanteDto.getNombre().equals(representante.getNombre())) {
-                representante.setNombre(representanteDto.getNombre());
+            if (representanteDto.getNombre() != null) {
+                if (!representanteDto.getNombre().equals(representante.getNombre())) {
+                    representante.setNombre(representanteDto.getNombre());
+                    actR = true;
+                }
             }
-            if (!representanteDto.getApellido1().equals(representante.getApellido1())) {
-                representante.setApellido1(representanteDto.getApellido1());
-            }
-            if (!representanteDto.getApellido2().equals(representante.getApellido2())) {
-                representante.setApellido2(representanteDto.getApellido2());
-            }
-            if (!representanteDto.getEmail().equals(representante.getEmail())) {
-                representante.setEmail(representanteDto.getEmail());
-            }
-            if (!representanteDto.getTelefono().equals(representante.getEmail())) {
-                representante.setTelefono(representanteDto.getTelefono());
-            }
-            if (!representanteDto.getDni().equals(representante.getDni())) {
-                representante.setDni(representanteDto.getDni());
-            }          
 
-            representanteRepository.save(representante);
-            return ResponseEntity.ok(new MessageResponse("El representante " + representante.getNombre() + " se ha editado correctamente"));
+            if (representanteDto.getApellido1() != null) {
+                if (!representanteDto.getApellido1().equals(representante.getApellido1())) {
+                    representante.setApellido1(representanteDto.getApellido1());
+                    actR = true;
+                }
+            }
+            
+            if (representanteDto.getApellido2() != null) {
+                if (!representanteDto.getApellido2().equals(representante.getApellido2())) {
+                    representante.setApellido2(representanteDto.getApellido2());
+                    actR = true;
+                }
+            }
+            
+            if (representanteDto.getEmail() != null) {
+                if (!representanteDto.getEmail().equals(representante.getEmail())) {
+                    representante.setEmail(representanteDto.getEmail());
+                    actR = true;
+                }
+            }
+            
+            if (representanteDto.getTelefono() != null) {
+                if (!representanteDto.getTelefono().equals(representante.getEmail())) {
+                    representante.setTelefono(representanteDto.getTelefono());
+                    actR = true;
+                }
+            }
+            
+            if (representanteDto.getDni() != null) {
+                if (!representanteDto.getDni().equals(representante.getDni())) {
+                    representante.setDni(representanteDto.getDni());
+                    actR = true;
+                }  
+            }
+
+            if (actR) {
+                representanteRepository.save(representante);
+                return ResponseEntity.ok(new MessageResponse("El representante " + representante.getNombre() + " se ha editado correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+            }
+            
         }
     }
 
+    @Transactional
     public ResponseEntity<?> eliminarRepresentante (RepresentanteResponse representanteResponse) {
 
         Representante representante = representanteRepository.findById(representanteResponse.getId())
@@ -331,6 +389,7 @@ public class UsuarioService {
         return ResponseEntity.ok(new MessageResponse("El representante " + representante.getNombre() + " ha sido eliminado correctamente"));
     }
 
+    @Transactional
     public ResponseEntity<?> findRepresentantesByIdUsuario (UUID idUsuario) {
 
         List<RepresentanteResponse> representantes = representanteRepository.findByUsuarioId(idUsuario).stream()
@@ -351,6 +410,7 @@ public class UsuarioService {
         return ResponseEntity.ok(representantes);
     }
 
+    @Transactional
     public ResponseEntity<?> findRepresentanteById (UUID idRepresentante) {
 
         Representante representante = representanteRepository.findById(idRepresentante)
@@ -369,5 +429,21 @@ public class UsuarioService {
         );
 
         return ResponseEntity.ok(representanteDto);
+    }
+
+    @Transactional
+    public ResponseEntity<?> findUsuariosByFincaAndNotInParcela (UUID idFinca, String referenciaCatastral) {
+
+        List<UsuarioResponseDto> usuariosDto = usuarioRepository.findUsuariosByFincaAndNotInParcela(idFinca, referenciaCatastral).stream()
+        .map(usuario -> new UsuarioResponseDto(
+            usuario.getId(),
+            usuario.getNombre(),
+            usuario.getApellido1(),
+            usuario.getApellido2(),
+            usuario.getUsername()
+        ))
+        .collect(Collectors.toList());
+
+        return ResponseEntity.ok(usuariosDto);
     }
 }

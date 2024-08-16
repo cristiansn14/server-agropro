@@ -14,7 +14,7 @@ import lombok.ToString;
 @ToString
 public class UsuarioParcelaResponseDto {
 
-    private UUID idUsuario;
+    private UUID id;
     
     private String nombre;
 
@@ -23,6 +23,10 @@ public class UsuarioParcelaResponseDto {
     private String apellido2;
 
     private long participacion;
+
+    private UUID idUsuario;
+
+    private String referenciaCatastral;
 
     private Timestamp fechaAlta;
 

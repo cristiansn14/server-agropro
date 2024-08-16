@@ -1,5 +1,8 @@
 package com.agroproserver.serveragropro.controller;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -11,7 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.agroproserver.serveragropro.dto.request.ParcelaConstruccionDto;
+import com.agroproserver.serveragropro.dto.request.ParcelaConstruccionRequestDto;
 import com.agroproserver.serveragropro.dto.request.ParcelaDto;
+import com.agroproserver.serveragropro.dto.request.ParcelaRequestDto;
+import com.agroproserver.serveragropro.dto.request.UsuarioParcelaDto;
+import com.agroproserver.serveragropro.dto.response.UsuarioParcelaResponseDto;
 import com.agroproserver.serveragropro.service.ParcelaService;
 
 import jakarta.validation.Valid;
@@ -28,9 +35,39 @@ public class ParcelaController {
         return parcelaService.guardarParcela(parcelaDto, bindingResult);
     }
 
+    @PostMapping("/actualizarParcela")
+    public ResponseEntity<?> actualizarParcela(@Valid @RequestBody ParcelaDto parcelaDto){
+        return parcelaService.actualizarParcela(parcelaDto);
+    }
+
+    @PostMapping("/editarParcela")
+    public ResponseEntity<?> editarParcela(@Valid @RequestBody ParcelaRequestDto parcelaDto, BindingResult bindingResult){
+        return parcelaService.editarParcela(parcelaDto, bindingResult);
+    }
+
     @PostMapping("/guardarParcelaConstruccion")
-    public ResponseEntity<?> guardarParcela(@Valid @RequestBody ParcelaConstruccionDto parcelaConstruccionDto, BindingResult bindingResult){
+    public ResponseEntity<?> guardarParcelaConstruccion(@Valid @RequestBody ParcelaConstruccionDto parcelaConstruccionDto, BindingResult bindingResult){
         return parcelaService.guardarParcelaConstruccion(parcelaConstruccionDto, bindingResult);
+    }
+
+    @PostMapping("/editarParcelaConstruccion")
+    public ResponseEntity<?> editarParcelaConstruccion(@Valid @RequestBody ParcelaConstruccionRequestDto parcelaConstruccionDto, BindingResult bindingResult){
+        return parcelaService.editarParcelaConstruccion(parcelaConstruccionDto, bindingResult);
+    }
+
+    @PostMapping("/crearUsuarioParcela")
+    public ResponseEntity<?> crearUsuarioParcela(@Valid @RequestBody List<UsuarioParcelaDto> usuarioParcelaDto, BindingResult bindingResult){
+        return parcelaService.crearUsuarioParcela(usuarioParcelaDto, bindingResult);
+    }
+
+    @PostMapping("/editarUsuarioParcela")
+    public ResponseEntity<?> editarUsuarioParcela(@Valid @RequestBody UsuarioParcelaResponseDto usuarioParcelaDto){
+        return parcelaService.editarUsuarioParcela(usuarioParcelaDto);
+    }
+
+    @PostMapping("/eliminarUsuarioParcela")
+    public ResponseEntity<?> eliminarUsuarioParcela(@Valid @RequestBody UsuarioParcelaResponseDto usuarioParcelaDto){
+        return parcelaService.eliminarUsuarioParcela(usuarioParcelaDto);
     }
 
     @GetMapping("/findParcelaByReferenciaCatastral/{referenciaCatastral}")
@@ -51,5 +88,15 @@ public class ParcelaController {
     @GetMapping("/findUsuariosInParcela/{referenciaCatastral}")
     public ResponseEntity<?> findUsuariosInParcela(@PathVariable String referenciaCatastral) {
         return parcelaService.findUsuariosInParcela(referenciaCatastral);
+    }
+
+    @GetMapping("/findUsuarioParcelaById/{idUsuarioParcela}")
+    public ResponseEntity<?> findUsuarioParcelaById(@PathVariable UUID idUsuarioParcela) {
+        return parcelaService.findUsuarioParcelaById(idUsuarioParcela);
+    }
+
+    @GetMapping("/getParticipacionesDisponibles/{referenciaCatastral}")
+    public ResponseEntity<?> getParticipacionesDisponibles(@PathVariable String referenciaCatastral) {
+        return parcelaService.getParticipacionesDisponibles(referenciaCatastral);
     }
 }

@@ -33,4 +33,5 @@ public class UsuarioFincaInfo {
     private Timestamp fechaModificacion;
 
     private Timestamp fechaBaja;
+
 }

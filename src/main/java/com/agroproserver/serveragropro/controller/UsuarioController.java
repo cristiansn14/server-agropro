@@ -79,4 +79,9 @@ public class UsuarioController {
     public ResponseEntity<?> findRepresentanteById(@PathVariable UUID idRepresentante) {
         return usuarioService.findRepresentanteById(idRepresentante);
     }
+
+    @GetMapping("/findUsuariosByFincaAndNotInParcela/{idFinca}/{referenciaCatastral}")
+    public ResponseEntity<?> findUsuariosByFincaAndNotInParcela(@PathVariable UUID idFinca, @PathVariable String referenciaCatastral) {
+        return usuarioService.findUsuariosByFincaAndNotInParcela(idFinca, referenciaCatastral);
+    }
 }
