@@ -17,8 +17,17 @@ import com.agroproserver.serveragropro.model.ParcelaConstruccion;
 @Transactional
 public interface ParcelaConstruccionRepository extends JpaRepository<ParcelaConstruccion, String> {
 
-    List<ParcelaConstruccion> findByFincaId(UUID idFinca);
+    @Query("SELECT p FROM ParcelaConstruccion p WHERE p.finca.id = :fincaId AND p.fechaBaja IS NULL")
+    List<ParcelaConstruccion> findByFincaId(@Param("fincaId")UUID idFinca);
 
     @Query("SELECT COALESCE(SUM(p.superficie), 0) FROM ParcelaConstruccion p WHERE p.finca.id = :fincaId")
     BigDecimal sumSuperficieByFincaId(@Param("fincaId") UUID fincaId);
+
+    @Query("SELECT p FROM ParcelaConstruccion p WHERE p.finca.id = :fincaId AND p.fechaBaja IS NOT NULL")
+    List<ParcelaConstruccion> findParcelasBajaByFincaId(@Param("fincaId") UUID fincaId);
+
+    @Query("SELECT up.parcelaConstruccion FROM UsuarioParcela up " +
+       "WHERE up.usuario.id = :usuarioId " +
+       "AND up.fechaBaja IS NULL")
+    List<ParcelaConstruccion> findParcelasConstruccionByUsuarioIdAndFechaBajaIsNull(@Param("usuarioId") UUID usuarioId);
 }

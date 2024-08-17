@@ -57,6 +57,7 @@ public class MainSecurity{
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         return http.csrf(csrf -> csrf.disable())
+        .cors(Customizer.withDefaults())
         .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
         .authorizeHttpRequests(auth ->
                 auth.requestMatchers("/**", "/api/auth/**").permitAll()

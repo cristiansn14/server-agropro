@@ -20,19 +20,31 @@ import org.springframework.core.io.Resource;
 import com.agroproserver.serveragropro.dto.request.RepresentanteRequest;
 import com.agroproserver.serveragropro.dto.request.UsuarioRequestDto;
 import com.agroproserver.serveragropro.dto.response.RepresentanteResponse;
+import com.agroproserver.serveragropro.dto.response.UsuarioInfoDto;
 import com.agroproserver.serveragropro.dto.response.UsuarioResponseDto;
 import com.agroproserver.serveragropro.model.Archivo;
 import com.agroproserver.serveragropro.model.Comunidad;
 import com.agroproserver.serveragropro.model.Municipio;
+import com.agroproserver.serveragropro.model.Parcela;
+import com.agroproserver.serveragropro.model.ParcelaConstruccion;
 import com.agroproserver.serveragropro.model.Provincia;
 import com.agroproserver.serveragropro.model.Representante;
 import com.agroproserver.serveragropro.model.Usuario;
+import com.agroproserver.serveragropro.model.UsuarioFinca;
+import com.agroproserver.serveragropro.model.UsuarioParcela;
+import com.agroproserver.serveragropro.model.Finca;
 import com.agroproserver.serveragropro.payload.response.MessageResponse;
 import com.agroproserver.serveragropro.repository.ArchivoRepository;
 import com.agroproserver.serveragropro.repository.ComunidadRepository;
+import com.agroproserver.serveragropro.repository.FincaRepository;
 import com.agroproserver.serveragropro.repository.MunicipioRepository;
+import com.agroproserver.serveragropro.repository.ParcelaConstruccionRepository;
+import com.agroproserver.serveragropro.repository.ParcelaRepository;
 import com.agroproserver.serveragropro.repository.ProvinciaRepository;
 import com.agroproserver.serveragropro.repository.RepresentanteRepository;
+import com.agroproserver.serveragropro.repository.RolRepository;
+import com.agroproserver.serveragropro.repository.UsuarioFincaRepository;
+import com.agroproserver.serveragropro.repository.UsuarioParcelaRepository;
 import com.agroproserver.serveragropro.repository.UsuarioRepository;
 import com.agroproserver.serveragropro.utils.ImageUtils;
 
@@ -62,6 +74,24 @@ public class UsuarioService {
 
     @Autowired
     RepresentanteRepository representanteRepository;
+
+    @Autowired
+    FincaRepository fincaRepository;
+
+    @Autowired
+    ParcelaRepository parcelaRepository;
+
+    @Autowired
+    ParcelaConstruccionRepository parcelaConstruccionRepository;
+
+    @Autowired
+    RolRepository rolRepository;
+
+    @Autowired
+    UsuarioFincaRepository usuarioFincaRepository;
+
+    @Autowired
+    UsuarioParcelaRepository usuarioParcelaRepository;
 
     @Transactional
     public ResponseEntity<?> findById(UUID id) {
@@ -435,15 +465,99 @@ public class UsuarioService {
     public ResponseEntity<?> findUsuariosByFincaAndNotInParcela (UUID idFinca, String referenciaCatastral) {
 
         List<UsuarioResponseDto> usuariosDto = usuarioRepository.findUsuariosByFincaAndNotInParcela(idFinca, referenciaCatastral).stream()
-        .map(usuario -> new UsuarioResponseDto(
-            usuario.getId(),
-            usuario.getNombre(),
-            usuario.getApellido1(),
-            usuario.getApellido2(),
-            usuario.getUsername()
-        ))
+            .map(usuario -> new UsuarioResponseDto(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getApellido1(),
+                usuario.getApellido2(),
+                usuario.getUsername()
+            ))
         .collect(Collectors.toList());
 
         return ResponseEntity.ok(usuariosDto);
+    }
+
+    @Transactional
+    public ResponseEntity<?> findAllUsuariosAlta() {
+
+        List<UsuarioInfoDto> usuariosInfo = usuarioRepository.findAllUsuariosAlta().stream()
+            .map(usuario -> new UsuarioInfoDto(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getApellido1(),
+                usuario.getApellido2(),
+                usuario.getUsername(),
+                usuario.getEmail(),
+                usuario.getDni(),
+                usuario.obtenerNombreRol(usuario)
+            ))
+        .collect(Collectors.toList());
+        return ResponseEntity.ok(usuariosInfo);
+    }
+
+    @Transactional
+    public ResponseEntity<?> findAllUsuariosBaja() {
+
+        List<UsuarioInfoDto> usuariosInfo = usuarioRepository.findAllUsuariosBaja().stream()
+            .map(usuario -> new UsuarioInfoDto(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getApellido1(),
+                usuario.getApellido2(),
+                usuario.getUsername(),
+                usuario.getEmail(),
+                usuario.getDni(),
+                usuario.obtenerNombreRol(usuario)
+            ))
+        .collect(Collectors.toList());
+        return ResponseEntity.ok(usuariosInfo);
+    }
+
+    @Transactional
+    public ResponseEntity<?> darBajaUsuario (UUID idUsuario) {
+        
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<Finca> fincas = fincaRepository.findByUsuarioId(idUsuario);
+
+        for (Finca finca : fincas) {
+            UsuarioFinca usuarioFinca = usuarioFincaRepository.findByUsuarioIdAndFincaIdNotBaja(idUsuario, finca.getId());
+            if (usuarioFinca != null) {
+                usuarioFinca.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+                usuarioFincaRepository.save(usuarioFinca);
+            }
+        }
+
+        List<Parcela> parcelas = parcelaRepository.findParcelasByUsuarioIdAndFechaBajaIsNull(idUsuario);
+        for (Parcela parcela : parcelas) {
+            UsuarioParcela usuarioParcela = usuarioParcelaRepository.findByUsuarioIdAndParcelaReferenciaCatastral(idUsuario, parcela.getReferenciaCatastral());
+            if (usuarioParcela != null && usuarioParcela.getFechaBaja() == null) {
+                usuarioParcela.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+                usuarioParcelaRepository.save(usuarioParcela);
+            }
+        }
+
+        List<ParcelaConstruccion> parcelasConstruccion = parcelaConstruccionRepository.findParcelasConstruccionByUsuarioIdAndFechaBajaIsNull(idUsuario);
+        for (ParcelaConstruccion parcela : parcelasConstruccion) {
+            UsuarioParcela usuarioParcela = usuarioParcelaRepository.findByUsuarioIdAndParcelaReferenciaCatastral(idUsuario, parcela.getReferenciaCatastral());
+            if (usuarioParcela != null && usuarioParcela.getFechaBaja() == null) {
+                usuarioParcela.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+                usuarioParcelaRepository.save(usuarioParcela);
+            }
+        }
+
+        usuario.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+        return ResponseEntity.ok(new MessageResponse("El usuario " + usuario.getUsername() + " ha sido eliminado correctamente"));
+    }
+
+    @Transactional
+    public ResponseEntity<?> darAltaUsuario (UUID idUsuario) {
+        
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setFechaBaja(null);
+        return ResponseEntity.ok(new MessageResponse("El usuario " + usuario.getUsername() + " se ha dado de alta correctamente"));
     }
 }

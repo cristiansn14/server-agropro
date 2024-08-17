@@ -127,4 +127,11 @@ public class Usuario {
         this.apellido1 = apellido1;
         this.apellido2 = apellido2;
     }
+
+    public String obtenerNombreRol(Usuario usuario) {
+        return usuario.getRoles().stream()
+                      .findFirst()  
+                      .map(rol -> rol.getRol().name()) 
+                      .orElse("");  
+    }
 }

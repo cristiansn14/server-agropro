@@ -77,6 +77,11 @@ public class FincaController {
         return fincaService.getParcelasByIdFinca(idFinca);
     }
 
+    @GetMapping("/getParcelasBajaByIdFinca/{idFinca}")
+    public ResponseEntity<?> getParcelasBajaByIdFinca(@PathVariable UUID idFinca) {
+        return fincaService.getParcelasBajaByIdFinca(idFinca);
+    }
+
     @GetMapping("/findUsuariosFincaByFincaId/{idFinca}")
     public ResponseEntity<?> findUsuariosFincaByFincaId(@PathVariable UUID idFinca) {
         return fincaService.findUsuariosFincaByFincaId(idFinca);

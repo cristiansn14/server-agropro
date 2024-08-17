@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,11 +18,14 @@ import com.agroproserver.serveragropro.dto.request.ParcelaConstruccionDto;
 import com.agroproserver.serveragropro.dto.request.ParcelaConstruccionRequestDto;
 import com.agroproserver.serveragropro.dto.request.ParcelaDto;
 import com.agroproserver.serveragropro.dto.request.ParcelaRequestDto;
+import com.agroproserver.serveragropro.dto.request.SubparcelaRequestDto;
 import com.agroproserver.serveragropro.dto.request.UsuarioParcelaDto;
 import com.agroproserver.serveragropro.dto.response.UsuarioParcelaResponseDto;
 import com.agroproserver.serveragropro.service.ParcelaService;
 
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 @RestController
 @RequestMapping("/parcela")
@@ -31,8 +35,13 @@ public class ParcelaController {
     ParcelaService parcelaService;
 
     @PostMapping("/guardarParcela")
-    public ResponseEntity<?> guardarParcela(@Valid @RequestBody ParcelaDto parcelaDto, BindingResult bindingResult){
+    public ResponseEntity<?> guardarParcela(@RequestBody ParcelaRequestDto parcelaDto, BindingResult bindingResult){
         return parcelaService.guardarParcela(parcelaDto, bindingResult);
+    }
+
+    @PostMapping("/guardarSubparcelas")
+    public ResponseEntity<?> guardarSubparcelas(@RequestBody List<SubparcelaRequestDto> subparcelasDto, BindingResult bindingResult){
+        return parcelaService.guardarSubparcelas(subparcelasDto, bindingResult);
     }
 
     @PostMapping("/actualizarParcela")
@@ -90,6 +99,11 @@ public class ParcelaController {
         return parcelaService.findUsuariosInParcela(referenciaCatastral);
     }
 
+    @GetMapping("/findUsuariosBajaInParcela/{referenciaCatastral}")
+    public ResponseEntity<?> findUsuariosBajaInParcela(@PathVariable String referenciaCatastral) {
+        return parcelaService.findUsuariosBajaInParcela(referenciaCatastral);
+    }
+
     @GetMapping("/findUsuarioParcelaById/{idUsuarioParcela}")
     public ResponseEntity<?> findUsuarioParcelaById(@PathVariable UUID idUsuarioParcela) {
         return parcelaService.findUsuarioParcelaById(idUsuarioParcela);
@@ -98,5 +112,15 @@ public class ParcelaController {
     @GetMapping("/getParticipacionesDisponibles/{referenciaCatastral}")
     public ResponseEntity<?> getParticipacionesDisponibles(@PathVariable String referenciaCatastral) {
         return parcelaService.getParticipacionesDisponibles(referenciaCatastral);
+    }
+
+    @PutMapping("/darAltaParcela")
+    public ResponseEntity<?> darAltaParcela(@RequestBody String referenciaCatastral) {
+        return parcelaService.darAltaParcela(referenciaCatastral);
+    }
+
+    @DeleteMapping("/darBajaParcela/{referenciaCatastral}")
+    public ResponseEntity<?> darBajaParcela(@PathVariable String referenciaCatastral){
+        return parcelaService.darBajaParcela(referenciaCatastral);
     }
 }

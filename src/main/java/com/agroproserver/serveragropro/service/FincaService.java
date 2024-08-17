@@ -111,6 +111,26 @@ public class FincaService {
     }
 
     @Transactional
+    public ResponseEntity<?> getParcelasBajaByIdFinca(UUID idFinca) {
+        
+        List<Parcela> parcelas = parcelaRepository.findParcelasBajaByFincaId(idFinca);
+        List<ParcelaConstruccion> parcelasConstruccion = parcelaConstruccionRepository.findParcelasBajaByFincaId(idFinca);
+        List<String> referenciaParcelas = new ArrayList<>();
+
+        if(!parcelas.isEmpty()){           
+            for (Parcela parcela : parcelas) {
+                referenciaParcelas.add(parcela.getReferenciaCatastral());
+            }           
+        } 
+        if(!parcelasConstruccion.isEmpty()){
+            for (ParcelaConstruccion parcelaConstruccion : parcelasConstruccion) {
+                referenciaParcelas.add(parcelaConstruccion.getReferenciaCatastral());
+            }
+        }
+        return ResponseEntity.ok(referenciaParcelas);               
+    }
+
+    @Transactional
     public ResponseEntity<?> guardarFinca(FincaRequestDto fincaDto, BindingResult bindingResult) {
         
         if(bindingResult.hasErrors()){

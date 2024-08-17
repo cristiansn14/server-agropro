@@ -26,8 +26,28 @@ public interface UsuarioParcelaRepository extends JpaRepository<UsuarioParcela, 
     @Query("SELECT new com.agroproserver.serveragropro.dto.response.UsuarioParcelaResponseDto(" +
            "up.id, u.nombre, u.apellido1, u.apellido2, up.participacion, u.id, up.parcela.referenciaCatastral, up.fechaAlta, up.fechaModificacion, up.fechaBaja) " +
            "FROM UsuarioParcela up JOIN up.usuario u " +
+           "WHERE up.parcela.referenciaCatastral = :referenciaCatastral AND up.fechaBaja IS NOT NULL")
+    List<UsuarioParcelaResponseDto> findUsuarioParcelaBajaByReferenciaCatastral(@Param("referenciaCatastral") String referenciaCatastral);
+
+    @Query("SELECT up FROM UsuarioParcela up JOIN up.usuario u " +
+           "WHERE up.parcela.referenciaCatastral = :referenciaCatastral AND up.fechaBaja IS NULL")
+    List<UsuarioParcela> findUsuariosParcelaByReferenciaCatastral(@Param("referenciaCatastral") String referenciaCatastral);
+
+    @Query("SELECT new com.agroproserver.serveragropro.dto.response.UsuarioParcelaResponseDto(" +
+           "up.id, u.nombre, u.apellido1, u.apellido2, up.participacion, u.id, up.parcelaConstruccion.referenciaCatastral, up.fechaAlta, up.fechaModificacion, up.fechaBaja) " +
+           "FROM UsuarioParcela up JOIN up.usuario u " +
            "WHERE up.parcelaConstruccion.referenciaCatastral = :referenciaCatastral AND up.fechaBaja IS NULL")
     List<UsuarioParcelaResponseDto> findUsuarioParcelaConstruccionByReferenciaCatastral(@Param("referenciaCatastral") String referenciaCatastral);
+
+    @Query("SELECT new com.agroproserver.serveragropro.dto.response.UsuarioParcelaResponseDto(" +
+           "up.id, u.nombre, u.apellido1, u.apellido2, up.participacion, u.id, up.parcelaConstruccion.referenciaCatastral, up.fechaAlta, up.fechaModificacion, up.fechaBaja) " +
+           "FROM UsuarioParcela up JOIN up.usuario u " +
+           "WHERE up.parcelaConstruccion.referenciaCatastral = :referenciaCatastral AND up.fechaBaja IS NOT NULL")
+    List<UsuarioParcelaResponseDto> findUsuarioParcelaConstruccionBajaByReferenciaCatastral(@Param("referenciaCatastral") String referenciaCatastral);
+
+    @Query("SELECT up FROM UsuarioParcela up JOIN up.usuario u " +
+           "WHERE up.parcelaConstruccion.referenciaCatastral = :referenciaCatastral AND up.fechaBaja IS NULL")
+    List<UsuarioParcela> findUsuariosParcelaConstruccionByReferenciaCatastral(@Param("referenciaCatastral") String referenciaCatastral);
 
     @Query("SELECT up FROM UsuarioParcela up " +
         "JOIN up.parcela p " +

@@ -14,6 +14,9 @@ public interface UsuarioFincaRepository extends JpaRepository<UsuarioFinca, UUID
     
     UsuarioFinca findByUsuarioIdAndFincaId(UUID usuarioId, UUID fincaId);
 
+    @Query("SELECT uf FROM UsuarioFinca uf WHERE uf.finca.id = :fincaId AND uf.usuario.id = :usuarioId AND uf.fechaBaja IS NULL")
+    UsuarioFinca findByUsuarioIdAndFincaIdNotBaja(@Param("usuarioId")UUID usuarioId, @Param("fincaId")UUID fincaId);
+
     Boolean existsByUsuarioIdAndFincaId(UUID usuarioId, UUID fincaId);
 
     @Query("SELECT uf FROM UsuarioFinca uf WHERE uf.finca.id = :fincaId AND uf.rol.rol <> 'SUPERUSUARIO' AND uf.fechaBaja IS NULL")
