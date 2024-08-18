@@ -73,106 +73,118 @@ public class ParcelaService {
     @Autowired
     ParcelaConstruccionRepository parcelaConstruccionRepository;
 
-    public ResponseEntity<?> guardarParcela (ParcelaRequestDto parcelaDto, BindingResult bindingResult) {
+    private static final String REFERENCIA_CATASTRAL_FORMATO = "^[0-9A-Z]{20}$";
 
+    public ResponseEntity<?> guardarParcela(ParcelaDto parcelaDto, BindingResult bindingResult) {
+        
         if(bindingResult.hasErrors()){
             return ResponseEntity.badRequest().body(new MessageResponse("Campos erróneos"));
         }
-
         if (parcelaDto == null) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha creado ninguna parcela"));
-        }
-
-        if (!isValidReferenciaCatastral(parcelaDto.getReferenciaCatastral().replace(" ", "").toUpperCase())) {
-            return ResponseEntity.badRequest().body("Formato de referencia catastral inválido");
-        }
-
-        if (parcelaRepository.existsById(parcelaDto.getReferenciaCatastral().replace(" ", "").toUpperCase())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela ya esta registrada"));
-        }
-
-        if (parcelaConstruccionRepository.existsById(parcelaDto.getReferenciaCatastral().replace(" ", "").toUpperCase())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela construccion ya esta registrada"));
-        }
-
-        Finca finca = fincaRepository.findById(parcelaDto.getIdFinca())
-            .orElseThrow(() -> new RuntimeException("Finca no encontrada"));          
-
-        PoligonoParcela poligonoParcela = new PoligonoParcela();
-        if (poligonoParcelaRepository.existsByProvinciaIdAndMunicipioIdAndPoligonoAndParcela(finca.getProvincia().getId(), finca.getMunicipio().getIdMunicipio(), parcelaDto.getPoligono(), parcelaDto.getParcela())) {
-            poligonoParcela = poligonoParcelaRepository.findByProvinciaIdAndMunicipioIdAndPoligonoAndParcela(finca.getProvincia().getId(), finca.getMunicipio().getIdMunicipio(), parcelaDto.getPoligono(), parcelaDto.getParcela());
-        } else {
-            poligonoParcela = PoligonoParcela.builder()
-                .poligono(parcelaDto.getPoligono())
-                .parcela(parcelaDto.getParcela())
-                .provincia(finca.getProvincia())
-                .municipio(finca.getMunicipio())
-                .build();
-            poligonoParcelaRepository.save(poligonoParcela);
-        }          
-
-        Paraje paraje = new Paraje();
-        if (parajeRepository.existsByNombre(parcelaDto.getParaje())) {
-            paraje = parajeRepository.findByNombre(parcelaDto.getParaje());
-        } else {
-            paraje = Paraje.builder()
-                .nombre(parcelaDto.getParaje())
-                .provincia(finca.getProvincia())
-                .municipio(finca.getMunicipio())
-                .build();
-            parajeRepository.save(paraje);
-        }
-
-        Parcela parcela = new Parcela (
-            parcelaDto.getReferenciaCatastral(),
-            parcelaDto.getClase(),
-            parcelaDto.getUsoPrincipal(),
-            parcelaDto.getSuperficie(),
-            poligonoParcela,
-            finca,
-            paraje,
-            new Timestamp(System.currentTimeMillis())
-        );
-
-        parcelaRepository.save(parcela);
-        return ResponseEntity.ok(new MessageResponse("La parcela se ha añadido correctamente."));
-    }
-
-    public ResponseEntity<?> guardarSubparcelas (List<SubparcelaRequestDto> subparcelasDto, BindingResult bindingResult) {
-
-        if(bindingResult.hasErrors()){
-            return ResponseEntity.badRequest().body(new MessageResponse("Campos erróneos"));
-        }
-
-        if (subparcelasDto.isEmpty()) {
+        } 
+        if (parcelaDto.getUsuariosParcela().isEmpty()) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ningun propietario"));
+        } 
+        if (parcelaDto.getSubparcelas().isEmpty()) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ninguna subparcela"));
         }
+        if (parcelaDto.getParcela() == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ninguna parcela"));
+        } else {
+            String ref = parcelaDto.getParcela().getReferenciaCatastral().replaceAll("\\s+", "").toUpperCase();
 
-        Parcela parcela = parcelaRepository.findById(subparcelasDto.get(0).getReferenciaCatastral())
-            .orElseThrow(() -> new RuntimeException("Parcela no encontrada"));
-
-        for (SubparcelaRequestDto subparcelaDto : subparcelasDto) {
-            Cultivo cultivo = new Cultivo();
-            if (cultivoRepository.existsByCodigo(subparcelaDto.getCodigoCultivo())) {
-                cultivo = cultivoRepository.findByCodigo(subparcelaDto.getCodigoCultivo());
-            } else {
-                cultivo = Cultivo.builder()
-                    .codigo(subparcelaDto.getCodigoCultivo())
-                    .descripcion(subparcelaDto.getDescripcionCultivo())
-                    .build();
-                cultivoRepository.save(cultivo);
+            if (!isValidReferenciaCatastral(ref)) {
+                System.out.println("\n \n HOLAL \n \n");
+                return ResponseEntity.badRequest().body(new MessageResponse("La referencia catastral no es valida"));
             }
 
-            Subparcela subparcela = Subparcela.builder()
-                .parcela(parcela)
-                .subparcela(subparcelaDto.getSubparcela())
-                .cultivo(cultivo)
-                .intensidad(subparcelaDto.getIntensidadProductiva())
-                .superficie(subparcelaDto.getSuperficie())
-                .build();
-            subparcelaRepository.save(subparcela);
+            if (parcelaRepository.existsById(ref)) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela ya esta registrada"));
+            }
+
+            if (parcelaConstruccionRepository.existsById(ref)) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela construccion ya esta registrada"));
+            }
+
+            Finca finca = fincaRepository.findById(parcelaDto.getParcela().getIdFinca())
+                .orElseThrow(() -> new RuntimeException("Finca no encontrada"));          
+
+            PoligonoParcela poligonoParcela = new PoligonoParcela();
+            if (poligonoParcelaRepository.existsByProvinciaIdAndMunicipioIdAndPoligonoAndParcela(finca.getProvincia().getId(), finca.getMunicipio().getIdMunicipio(), parcelaDto.getParcela().getPoligono(), parcelaDto.getParcela().getParcela())) {
+                poligonoParcela = poligonoParcelaRepository.findByProvinciaIdAndMunicipioIdAndPoligonoAndParcela(finca.getProvincia().getId(), finca.getMunicipio().getIdMunicipio(), parcelaDto.getParcela().getPoligono(), parcelaDto.getParcela().getParcela());
+            } else {
+                poligonoParcela = PoligonoParcela.builder()
+                    .poligono(parcelaDto.getParcela().getPoligono())
+                    .parcela(parcelaDto.getParcela().getParcela())
+                    .provincia(finca.getProvincia())
+                    .municipio(finca.getMunicipio())
+                    .build();
+                poligonoParcelaRepository.save(poligonoParcela);
+            }          
+
+            Paraje paraje = new Paraje();
+            if (parajeRepository.existsByNombre(parcelaDto.getParcela().getParaje())) {
+                paraje = parajeRepository.findByNombre(parcelaDto.getParcela().getParaje());
+            } else {
+                paraje = Paraje.builder()
+                    .nombre(parcelaDto.getParcela().getParaje())
+                    .provincia(finca.getProvincia())
+                    .municipio(finca.getMunicipio())
+                    .build();
+                parajeRepository.save(paraje);
+            }
+
+            Parcela parcela = new Parcela (
+                ref,
+                parcelaDto.getParcela().getClase(),
+                parcelaDto.getParcela().getUsoPrincipal(),
+                parcelaDto.getParcela().getSuperficie(),
+                poligonoParcela,
+                finca,
+                paraje,
+                new Timestamp(System.currentTimeMillis())
+            );
+            parcelaRepository.save(parcela);
+            
+            for (SubparcelaRequestDto subparcelaDto : parcelaDto.getSubparcelas()) {
+                Cultivo cultivo = new Cultivo();
+                if (cultivoRepository.existsByCodigo(subparcelaDto.getCodigoCultivo())) {
+                    cultivo = cultivoRepository.findByCodigo(subparcelaDto.getCodigoCultivo());
+                } else {
+                    cultivo = Cultivo.builder()
+                        .codigo(subparcelaDto.getCodigoCultivo())
+                        .descripcion(subparcelaDto.getDescripcionCultivo())
+                        .build();
+                    cultivoRepository.save(cultivo);
+                }
+                Subparcela subparcela = Subparcela.builder()
+                    .parcela(parcela)
+                    .subparcela(subparcelaDto.getSubparcela())
+                    .cultivo(cultivo)
+                    .intensidad(subparcelaDto.getIntensidadProductiva())
+                    .superficie(subparcelaDto.getSuperficie())
+                    .build();
+                subparcelaRepository.save(subparcela);
+            }
+
+            for (UsuarioParcelaRequestDto usuarioParcelaDto : parcelaDto.getUsuariosParcela()) {
+                if (usuarioParcelaDto.getParticipacion() <= 0 || usuarioParcelaDto.getParticipacion() > 100) {
+                    return ResponseEntity.badRequest().body(new MessageResponse("La participacion tiene que estar entre 0 y 100"));
+                }
+                Usuario usuario = usuarioRepository.findById(usuarioParcelaDto.getUsuario())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                UsuarioParcela usuarioParcela = new UsuarioParcela (
+                    usuario,
+                    parcela,
+                    usuarioParcelaDto.getParticipacion(),
+                    new Timestamp(System.currentTimeMillis())
+                );
+                usuarioParcelaRepository.save(usuarioParcela);
+            }
+
+            return ResponseEntity.ok(new MessageResponse("La parcela se ha añadido correctamente."));
         }
-        return ResponseEntity.ok(new MessageResponse("Las subparcelas se han añadido correctamente."));
     }
 
     public ResponseEntity<?> actualizarParcela(ParcelaDto parcelaDto) {
@@ -471,15 +483,18 @@ public class ParcelaService {
         if (parcelaDto.getUsuariosParcela().isEmpty()) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error, no se ha añadido ningun propietario"));
         } else {
-            if (!isValidReferenciaCatastral(parcelaDto.getParcelaConstruccion().getReferenciaCatastral().replace(" ", "").toUpperCase())) {
-                return ResponseEntity.badRequest().body("Formato de referencia catastral inválido");
+            String ref = parcelaDto.getParcelaConstruccion().getReferenciaCatastral().replaceAll("\\s+", "").toUpperCase();
+
+            if (!isValidReferenciaCatastral(ref)) {
+                return ResponseEntity.badRequest().body(new MessageResponse("La referencia catastral no es valida"));
             }
 
-            if (parcelaRepository.existsById(parcelaDto.getParcelaConstruccion().getReferenciaCatastral().replace(" ", "").toUpperCase())) {
+            if (parcelaRepository.existsById(ref)) {
                 return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela ya esta registrada"));
             }
-            if (parcelaConstruccionRepository.existsById(parcelaDto.getParcelaConstruccion().getReferenciaCatastral().replace(" ", "").toUpperCase())) {
-                return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela ya esta registrada"));
+
+            if (parcelaConstruccionRepository.existsById(ref)) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Error, la parcela construccion ya esta registrada"));
             }
 
             Finca finca = fincaRepository.findById(parcelaDto.getParcelaConstruccion().getIdFinca())
@@ -812,12 +827,10 @@ public class ParcelaService {
     }
 
     private boolean isValidReferenciaCatastral(String referenciaCatastral) {
-
-        String REFERENCIA_CATASTRAL_REGEX = "^[0-9]{7}[A-Z0-9]{7}$";
          
         if (referenciaCatastral == null || referenciaCatastral.isEmpty()) {
             return false;
         }
-        return referenciaCatastral.matches(REFERENCIA_CATASTRAL_REGEX);
+        return referenciaCatastral.matches(REFERENCIA_CATASTRAL_FORMATO);
     }
 }

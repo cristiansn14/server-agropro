@@ -18,7 +18,6 @@ import com.agroproserver.serveragropro.dto.request.ParcelaConstruccionDto;
 import com.agroproserver.serveragropro.dto.request.ParcelaConstruccionRequestDto;
 import com.agroproserver.serveragropro.dto.request.ParcelaDto;
 import com.agroproserver.serveragropro.dto.request.ParcelaRequestDto;
-import com.agroproserver.serveragropro.dto.request.SubparcelaRequestDto;
 import com.agroproserver.serveragropro.dto.request.UsuarioParcelaDto;
 import com.agroproserver.serveragropro.dto.response.UsuarioParcelaResponseDto;
 import com.agroproserver.serveragropro.service.ParcelaService;
@@ -35,13 +34,8 @@ public class ParcelaController {
     ParcelaService parcelaService;
 
     @PostMapping("/guardarParcela")
-    public ResponseEntity<?> guardarParcela(@RequestBody ParcelaRequestDto parcelaDto, BindingResult bindingResult){
+    public ResponseEntity<?> guardarParcela(@Valid @RequestBody ParcelaDto parcelaDto, BindingResult bindingResult){
         return parcelaService.guardarParcela(parcelaDto, bindingResult);
-    }
-
-    @PostMapping("/guardarSubparcelas")
-    public ResponseEntity<?> guardarSubparcelas(@RequestBody List<SubparcelaRequestDto> subparcelasDto, BindingResult bindingResult){
-        return parcelaService.guardarSubparcelas(subparcelasDto, bindingResult);
     }
 
     @PostMapping("/actualizarParcela")

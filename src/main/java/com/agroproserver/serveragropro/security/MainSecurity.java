@@ -60,7 +60,7 @@ public class MainSecurity{
         .cors(Customizer.withDefaults())
         .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
         .authorizeHttpRequests(auth ->
-                auth.requestMatchers("/**", "/api/auth/**").permitAll()
+                auth.requestMatchers("/**").permitAll()
                         .anyRequest()
                         .authenticated()                        
         )

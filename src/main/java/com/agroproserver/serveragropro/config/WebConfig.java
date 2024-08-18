@@ -22,7 +22,8 @@ public class WebConfig {
                     .allowedMethods(HttpMethod.GET.name(),
                                     HttpMethod.POST.name(),
                                     HttpMethod.DELETE.name(),
-                                    HttpMethod.PUT.name())
+                                    HttpMethod.PUT.name(),
+                                    HttpMethod.OPTIONS.name())
                     .allowedHeaders(HttpHeaders.CONTENT_TYPE,
                                     HttpHeaders.AUTHORIZATION);
             }
