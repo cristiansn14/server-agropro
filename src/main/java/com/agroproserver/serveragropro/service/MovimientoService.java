@@ -35,7 +35,7 @@ public class MovimientoService {
     FincaRepository fincaRepository;
 
     @Autowired
-    private MovimientoRepository movimientoRepository;
+    MovimientoRepository movimientoRepository;
 
     @Autowired
     ArchivoRepository archivoRepository;

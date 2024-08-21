@@ -6,12 +6,15 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.agroproserver.serveragropro.dto.request.FincaRequestDto;
 import com.agroproserver.serveragropro.dto.request.UsuarioFincaRequestDto;
@@ -90,5 +93,22 @@ public class FincaController {
     @GetMapping("/findUsuarioFincaById/{idUsuarioFinca}")
     public ResponseEntity<?> findUsuarioFincaById(@PathVariable UUID idUsuarioFinca) {
         return fincaService.findUsuarioFincaById(idUsuarioFinca);
+    }
+
+    @GetMapping("/findArchivosByIdFinca/{idFinca}")
+    public ResponseEntity<?> findArchivosByIdFinca(@PathVariable UUID idFinca) {
+        return fincaService.findArchivosByIdFinca(idFinca);
+    }
+
+    @PostMapping("/guardarArchivo")
+    public ResponseEntity<?> guardarArchivo(@RequestPart("idFinca") @Valid UUID idFinca,
+        @RequestPart(value = "archivo", required = true) MultipartFile archivo,
+        BindingResult bindingResult){
+        return fincaService.guardarArchivo(archivo, idFinca);
+    }
+
+    @DeleteMapping("/eliminarArchivo/{idArchivo}")
+    public ResponseEntity<?> eliminarArchivo(@PathVariable UUID idArchivo){
+        return fincaService.eliminarArchivo(idArchivo);
     }
 }

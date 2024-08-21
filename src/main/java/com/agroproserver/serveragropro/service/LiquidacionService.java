@@ -300,8 +300,8 @@ public class LiquidacionService {
                 lineaLiquidacion.getUsuario().getId(),
                 lineaLiquidacion.getRecibida()
             ))
-            .collect(Collectors.toList());
-            return ResponseEntity.ok(lineasLiquidacionResponse);
+        .collect(Collectors.toList());
+        return ResponseEntity.ok(lineasLiquidacionResponse);
     }
 
     @Transactional

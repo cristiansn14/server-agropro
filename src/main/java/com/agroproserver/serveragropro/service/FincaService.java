@@ -1,10 +1,12 @@
 package com.agroproserver.serveragropro.service;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,12 +14,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.agroproserver.serveragropro.dto.request.FincaRequestDto;
 import com.agroproserver.serveragropro.dto.request.UsuarioFincaRequestDto;
+import com.agroproserver.serveragropro.dto.response.ArchivoResponseDto;
 import com.agroproserver.serveragropro.dto.response.FincaResponseDto;
 import com.agroproserver.serveragropro.dto.response.UsuarioFincaDto;
 import com.agroproserver.serveragropro.dto.response.UsuarioFincaInfo;
+import com.agroproserver.serveragropro.model.Archivo;
 import com.agroproserver.serveragropro.model.Comunidad;
 import com.agroproserver.serveragropro.model.ERol;
 import com.agroproserver.serveragropro.model.Finca;
@@ -29,6 +34,7 @@ import com.agroproserver.serveragropro.model.Rol;
 import com.agroproserver.serveragropro.model.Usuario;
 import com.agroproserver.serveragropro.model.UsuarioFinca;
 import com.agroproserver.serveragropro.payload.response.MessageResponse;
+import com.agroproserver.serveragropro.repository.ArchivoRepository;
 import com.agroproserver.serveragropro.repository.ComunidadRepository;
 import com.agroproserver.serveragropro.repository.FincaRepository;
 import com.agroproserver.serveragropro.repository.MunicipioRepository;
@@ -68,6 +74,9 @@ public class FincaService {
 
     @Autowired
     MunicipioRepository municipioRepository;
+
+    @Autowired
+    ArchivoRepository archivoRepository;
 
     @Transactional
     public ResponseEntity<?> findById(UUID idFinca) {
@@ -466,4 +475,56 @@ public class FincaService {
     public ResponseEntity<?> getOnzasDisponibles (UUID idFinca) {
         return ResponseEntity.ok(fincaRepository.getOnzasDisponibles(idFinca));
     }
+
+    @Transactional
+    public ResponseEntity<?> guardarArchivo (MultipartFile archivoFinca, UUID idFinca) {
+        
+        if (archivoFinca != null && !archivoFinca.isEmpty()) {
+            try {
+                Finca finca = fincaRepository.findById(idFinca)
+                    .orElseThrow(() -> new RuntimeException("Finca no encontrada"));
+                Archivo archivo = Archivo.builder()
+                            .name(archivoFinca.getOriginalFilename())
+                            .type(archivoFinca.getContentType())
+                            .data(archivoFinca.getBytes())
+                            .finca(finca)
+                            .build();
+                archivoRepository.save(archivo);
+                return ResponseEntity.ok(new MessageResponse("Se ha añadido el archivo correctamente"));
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Error al procesar el archivo", e);
+            }
+        }
+
+        return ResponseEntity.badRequest().body(new MessageResponse("No se ha introducido ningún archivo"));
+    }
+
+    @Transactional
+    public ResponseEntity<?> eliminarArchivo (UUID idArchivo) {
+        
+        Archivo archivo = archivoRepository.findById(idArchivo)
+            .orElseThrow(() -> new RuntimeException("Archivo no encontrado"));
+
+        archivoRepository.delete(archivo);
+        
+        return ResponseEntity.ok(new MessageResponse("Se ha eliminado el archivo correctamente"));
+    }
+
+    @Transactional
+    public ResponseEntity<?> findArchivosByIdFinca (UUID idFinca) {
+        
+        List<ArchivoResponseDto> archivos = archivoRepository.findByFincaId(idFinca).stream()
+            .map(archivo -> new ArchivoResponseDto(
+                archivo.getId(),
+                archivo.getName(),
+                archivo.getType(),
+                archivo.getData()
+            ))
+        .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(archivos);
+    }
+
+    
 }
