@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -110,5 +111,30 @@ public class FincaController {
     @DeleteMapping("/eliminarArchivo/{idArchivo}")
     public ResponseEntity<?> eliminarArchivo(@PathVariable UUID idArchivo){
         return fincaService.eliminarArchivo(idArchivo);
+    }
+
+    @GetMapping("/findAllFincasAltaByUsuarioId/{idUsuario}")
+    public ResponseEntity<?> findAllFincasAltaByUsuarioId(@PathVariable UUID idUsuario) {
+        return fincaService.findAllFincasAltaByUsuarioId(idUsuario);
+    }
+
+    @GetMapping("/findAllFincasBajaByUsuarioId/{idUsuario}")
+    public ResponseEntity<?> findAllFincasBajaByUsuarioId(@PathVariable UUID idUsuario) {
+        return fincaService.findAllFincasBajaByUsuarioId(idUsuario);
+    }
+
+    @PutMapping("/darAltaFinca")
+    public ResponseEntity<?> darAltaFinca(@RequestBody UUID idFinca) {
+        return fincaService.darAltaFinca(idFinca);
+    }
+
+    @DeleteMapping("/darBajaFinca/{idFinca}")
+    public ResponseEntity<?> darBajaFinca(@PathVariable UUID idFinca){
+        return fincaService.darBajaFinca(idFinca);
+    }
+
+    @DeleteMapping("/eliminarFinca/{idFinca}")
+    public ResponseEntity<?> eliminarFinca(@PathVariable UUID idFinca){
+        return fincaService.eliminarFinca(idFinca);
     }
 }

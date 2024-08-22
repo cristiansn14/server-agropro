@@ -22,8 +22,17 @@ public interface FincaRepository extends JpaRepository<Finca, UUID> {
     Optional<Finca> findByNombre(String nombre);
 
     @Query("SELECT f FROM Finca f WHERE EXISTS (" +
-           "SELECT uf FROM UsuarioFinca uf WHERE uf.finca = f AND uf.usuario.id = :usuarioId AND uf.fechaBaja IS NULL)")
+           "SELECT uf FROM UsuarioFinca uf WHERE uf.finca = f AND uf.usuario.id = :usuarioId AND uf.fechaBaja IS NULL AND " +
+           "(uf.rol.rol = 'SUPERUSUARIO' OR uf.rol.rol <> 'SUPERUSUARIO'))")
     List<Finca> findByUsuarioId(@Param("usuarioId") UUID usuarioId);
+
+    @Query("SELECT f FROM Finca f WHERE f.fechaBaja IS NULL AND EXISTS (" +
+           "SELECT uf FROM UsuarioFinca uf WHERE uf.finca = f AND uf.usuario.id = :usuarioId AND uf.fechaBaja IS NULL)")
+    List<Finca> findFincasAltaByUsuarioId(@Param("usuarioId") UUID usuarioId);
+
+    @Query("SELECT f FROM Finca f WHERE f.fechaBaja IS NOT NULL AND EXISTS (" +
+           "SELECT uf FROM UsuarioFinca uf WHERE uf.finca = f AND uf.usuario.id = :usuarioId)")
+    List<Finca> findFincasBajaByUsuarioId(@Param("usuarioId") UUID usuarioId);
 
     @Query("SELECT f.onzas - COALESCE(SUM(uf.onzas), 0) FROM Finca f " +
            "LEFT JOIN UsuarioFinca uf ON f.id = uf.finca.id AND uf.fechaBaja IS NULL " +

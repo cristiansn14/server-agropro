@@ -44,7 +44,7 @@ public interface UsuarioParcelaRepository extends JpaRepository<UsuarioParcela, 
            "FROM UsuarioParcela up JOIN up.usuario u " +
            "WHERE up.parcelaConstruccion.referenciaCatastral = :referenciaCatastral AND up.fechaBaja IS NOT NULL")
     List<UsuarioParcelaResponseDto> findUsuarioParcelaConstruccionBajaByReferenciaCatastral(@Param("referenciaCatastral") String referenciaCatastral);
-
+    
     @Query("SELECT up FROM UsuarioParcela up JOIN up.usuario u " +
            "WHERE up.parcelaConstruccion.referenciaCatastral = :referenciaCatastral AND up.fechaBaja IS NULL")
     List<UsuarioParcela> findUsuariosParcelaConstruccionByReferenciaCatastral(@Param("referenciaCatastral") String referenciaCatastral);
@@ -67,4 +67,8 @@ public interface UsuarioParcelaRepository extends JpaRepository<UsuarioParcela, 
     UsuarioParcela findByUsuarioIdAndParcelaReferenciaCatastral (UUID idUsuario, String referenciaCatastral);
 
     UsuarioParcela findByUsuarioIdAndParcelaConstruccionReferenciaCatastral (UUID idUsuario, String referenciaCatastral);
+
+    List<UsuarioParcela> findByParcelaReferenciaCatastral (@Param("referenciaCatastral")String referenciaCatastral);
+
+    List<UsuarioParcela> findByParcelaConstruccionReferenciaCatastral (String referenciaCatastral);
 }

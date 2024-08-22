@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.agroproserver.serveragropro.dto.request.FincaRequestDto;
 import com.agroproserver.serveragropro.dto.request.UsuarioFincaRequestDto;
 import com.agroproserver.serveragropro.dto.response.ArchivoResponseDto;
+import com.agroproserver.serveragropro.dto.response.FincaInfoDto;
 import com.agroproserver.serveragropro.dto.response.FincaResponseDto;
 import com.agroproserver.serveragropro.dto.response.UsuarioFincaDto;
 import com.agroproserver.serveragropro.dto.response.UsuarioFincaInfo;
@@ -26,23 +27,33 @@ import com.agroproserver.serveragropro.model.Archivo;
 import com.agroproserver.serveragropro.model.Comunidad;
 import com.agroproserver.serveragropro.model.ERol;
 import com.agroproserver.serveragropro.model.Finca;
+import com.agroproserver.serveragropro.model.LineaLiquidacion;
+import com.agroproserver.serveragropro.model.Liquidacion;
+import com.agroproserver.serveragropro.model.Movimiento;
 import com.agroproserver.serveragropro.model.Municipio;
 import com.agroproserver.serveragropro.model.Parcela;
 import com.agroproserver.serveragropro.model.ParcelaConstruccion;
 import com.agroproserver.serveragropro.model.Provincia;
 import com.agroproserver.serveragropro.model.Rol;
+import com.agroproserver.serveragropro.model.Subparcela;
 import com.agroproserver.serveragropro.model.Usuario;
 import com.agroproserver.serveragropro.model.UsuarioFinca;
+import com.agroproserver.serveragropro.model.UsuarioParcela;
 import com.agroproserver.serveragropro.payload.response.MessageResponse;
 import com.agroproserver.serveragropro.repository.ArchivoRepository;
 import com.agroproserver.serveragropro.repository.ComunidadRepository;
 import com.agroproserver.serveragropro.repository.FincaRepository;
+import com.agroproserver.serveragropro.repository.LineaLiquidacionRepository;
+import com.agroproserver.serveragropro.repository.LiquidacionRepository;
+import com.agroproserver.serveragropro.repository.MovimientoRepository;
 import com.agroproserver.serveragropro.repository.MunicipioRepository;
 import com.agroproserver.serveragropro.repository.ParcelaConstruccionRepository;
 import com.agroproserver.serveragropro.repository.ParcelaRepository;
 import com.agroproserver.serveragropro.repository.ProvinciaRepository;
 import com.agroproserver.serveragropro.repository.RolRepository;
+import com.agroproserver.serveragropro.repository.SubparcelaRepository;
 import com.agroproserver.serveragropro.repository.UsuarioFincaRepository;
+import com.agroproserver.serveragropro.repository.UsuarioParcelaRepository;
 import com.agroproserver.serveragropro.repository.UsuarioRepository;
 
 @Service
@@ -77,6 +88,21 @@ public class FincaService {
 
     @Autowired
     ArchivoRepository archivoRepository;
+
+    @Autowired
+    SubparcelaRepository subparcelaRepository;
+
+    @Autowired
+    UsuarioParcelaRepository usuarioParcelaRepository;
+
+    @Autowired
+    LiquidacionRepository liquidacionRepository;
+
+    @Autowired
+    LineaLiquidacionRepository lineaLiquidacionRepository;
+
+    @Autowired
+    MovimientoRepository movimientoRepository;
 
     @Transactional
     public ResponseEntity<?> findById(UUID idFinca) {
@@ -383,6 +409,7 @@ public class FincaService {
         UsuarioFinca usuarioFinca = usuarioFincaRepository.findById(usuarioFincaDto.getId())
             .orElseThrow(() -> new RuntimeException("Usuario finca no encontrado"));
         
+        usuarioFinca.setFechaModificacion(null);
         usuarioFinca.setFechaBaja(new Timestamp(System.currentTimeMillis()));
         usuarioFincaRepository.save(usuarioFinca);
         
@@ -526,5 +553,192 @@ public class FincaService {
         return ResponseEntity.ok(archivos);
     }
 
-    
+    @Transactional
+    public ResponseEntity<?> findAllFincasAltaByUsuarioId (UUID idUsuario) {
+        List<Finca> fincas = fincaRepository.findFincasAltaByUsuarioId(idUsuario);
+        if (fincas != null) {
+            List<FincaInfoDto> fincasDto = new ArrayList<>();
+            fincas.forEach(finca -> {
+                FincaInfoDto fincaDto = FincaInfoDto.builder()
+                        .id(finca.getId())
+                        .nombre(finca.getNombre())
+                        .onzas(finca.getOnzas())
+                        .idComunidad(finca.getComunidad().getId())
+                        .nombreComunidad(finca.getComunidad().getNombre())
+                        .idProvincia(finca.getProvincia().getId())
+                        .nombreProvincia(finca.getProvincia().getNombre())
+                        .idMunicipio(finca.getMunicipio().getIdMunicipio())
+                        .nombreMunicipio(finca.getMunicipio().getNombre())
+                        .fechaAlta(finca.getFechaAlta())
+                        .fechaModificacion(finca.getFechaModificacion())
+                        .build();
+                
+                fincasDto.add(fincaDto);
+            });
+
+            return ResponseEntity.ok(fincasDto);
+        } else {
+            return ResponseEntity.badRequest().body(new MessageResponse("Usted no se encuentra registrado en ninguna finca"));
+        }       
+    }
+
+    @Transactional
+    public ResponseEntity<?> findAllFincasBajaByUsuarioId (UUID idUsuario) {
+        List<Finca> fincas = fincaRepository.findFincasBajaByUsuarioId(idUsuario);
+        if (fincas != null) {
+            List<FincaInfoDto> fincasDto = new ArrayList<>();
+            fincas.forEach(finca -> {
+                FincaInfoDto fincaDto = FincaInfoDto.builder()
+                        .id(finca.getId())
+                        .nombre(finca.getNombre())
+                        .onzas(finca.getOnzas())
+                        .idComunidad(finca.getComunidad().getId())
+                        .nombreComunidad(finca.getComunidad().getNombre())
+                        .idProvincia(finca.getProvincia().getId())
+                        .nombreProvincia(finca.getProvincia().getNombre())
+                        .idMunicipio(finca.getMunicipio().getIdMunicipio())
+                        .nombreMunicipio(finca.getMunicipio().getNombre())
+                        .fechaBaja(finca.getFechaBaja())
+                        .build();
+                
+                fincasDto.add(fincaDto);
+            });
+
+            return ResponseEntity.ok(fincasDto);
+        } else {
+            return ResponseEntity.badRequest().body(new MessageResponse("Usted no se encuentra registrado en ninguna finca"));
+        }       
+    }
+
+    public ResponseEntity<?> darAltaFinca (UUID idFinca) {
+
+        Finca finca = fincaRepository.findById(idFinca)
+            .orElseThrow(() -> new RuntimeException("Finca no encontrada"));
+
+        if (finca.getFechaBaja() != null) {
+            finca.setFechaModificacion(new Timestamp(System.currentTimeMillis()));
+            finca.setFechaBaja(null);
+            fincaRepository.save(finca);
+        }
+
+        return ResponseEntity.ok(new MessageResponse("Se ha dado de baja la finca correctamente"));
+    }
+
+    @Transactional
+    public ResponseEntity<?> darBajaFinca (UUID idFinca) {
+
+        List<Parcela> parcelas = parcelaRepository.findParcelasAltaByFincaId(idFinca);
+                       
+        if (!parcelas.isEmpty()) {
+            for (Parcela parcela : parcelas) {
+                parcela.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+                parcelaRepository.save(parcela);
+                List<UsuarioParcela> usuariosParcela = usuarioParcelaRepository.findUsuariosParcelaByReferenciaCatastral(parcela.getReferenciaCatastral());
+                if (!usuariosParcela.isEmpty()) {
+                    for (UsuarioParcela usuarioParcela : usuariosParcela) {
+                        usuarioParcela.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+                        usuarioParcelaRepository.save(usuarioParcela);
+                    }
+                }                
+            }
+        }
+
+        List<ParcelaConstruccion> parcelaConstruccion = parcelaConstruccionRepository.findParcelasAltaByFincaId(idFinca);
+
+        if (!parcelaConstruccion.isEmpty()) {
+            for (ParcelaConstruccion parcela : parcelaConstruccion) {
+                parcela.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+                parcelaConstruccionRepository.save(parcela);
+                List<UsuarioParcela> usuariosParcela = usuarioParcelaRepository.findUsuariosParcelaConstruccionByReferenciaCatastral(parcela.getReferenciaCatastral());
+                if (!usuariosParcela.isEmpty()) {
+                    for (UsuarioParcela usuarioParcela : usuariosParcela) {
+                        usuarioParcela.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+                        usuarioParcelaRepository.save(usuarioParcela);
+                    }
+                }
+            }
+        }
+
+        List<UsuarioFinca> usuariosFinca = usuarioFincaRepository.findUsuariosFincaByFincaId(idFinca);
+
+        if (!usuariosFinca.isEmpty()) {
+            for (UsuarioFinca usuarioFinca : usuariosFinca) {
+                usuarioFinca.setFechaModificacion(null);
+                usuarioFinca.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+                usuarioFincaRepository.save(usuarioFinca); 
+            }
+        }
+
+        Finca finca = fincaRepository.findById(idFinca)
+            .orElseThrow(() -> new RuntimeException("Finca no encontrada"));
+
+        if (finca.getFechaBaja() == null) {
+            finca.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+            fincaRepository.save(finca);
+        }
+
+        return ResponseEntity.ok(new MessageResponse("Se ha dado de baja la finca correctamente"));
+    }
+
+    @Transactional
+    public ResponseEntity<?> eliminarFinca (UUID idFinca) {
+
+        List<Parcela> parcelas = parcelaRepository.findParcelasAltaByFincaId(idFinca);
+                       
+        if (!parcelas.isEmpty()) {
+            for (Parcela parcela : parcelas) {
+                List<UsuarioParcela> usuariosParcela = usuarioParcelaRepository.findByParcelaReferenciaCatastral(parcela.getReferenciaCatastral());
+                if (!usuariosParcela.isEmpty()) {
+                    usuarioParcelaRepository.deleteAll(usuariosParcela);                        
+                }
+                List<Subparcela> subparcelas = subparcelaRepository.findByParcelaReferenciaCatastral(parcela.getReferenciaCatastral());
+                subparcelaRepository.deleteAll(subparcelas);
+
+                parcelaRepository.delete(parcela);                               
+            }
+        }
+
+        List<ParcelaConstruccion> parcelaConstruccion = parcelaConstruccionRepository.findParcelasAltaByFincaId(idFinca);
+
+        if (!parcelaConstruccion.isEmpty()) {
+            for (ParcelaConstruccion parcela : parcelaConstruccion) {
+                List<UsuarioParcela> usuariosParcela = usuarioParcelaRepository.findByParcelaConstruccionReferenciaCatastral(parcela.getReferenciaCatastral());
+                if (!usuariosParcela.isEmpty()) {
+                    usuarioParcelaRepository.deleteAll(usuariosParcela);
+                }
+                parcelaConstruccionRepository.delete(parcela);               
+            }
+        }
+
+        List<UsuarioFinca> usuariosFinca = usuarioFincaRepository.findUsuariosFincaByFincaId(idFinca);
+
+        if (!usuariosFinca.isEmpty()) {
+            for (UsuarioFinca usuarioFinca : usuariosFinca) {
+                if (usuarioFinca.getFechaBaja() != null) {
+                    usuarioFinca.setFechaBaja(new Timestamp(System.currentTimeMillis()));
+                    usuarioFincaRepository.save(usuarioFinca);
+                }   
+            }
+        }
+
+        List<Archivo> archivos = archivoRepository.findByFincaId(idFinca);
+        archivoRepository.deleteAll(archivos);
+
+        List<Movimiento> movimientos = movimientoRepository.findByFincaId(idFinca);
+        movimientoRepository.deleteAll(movimientos);
+
+        List<Liquidacion> liquidaciones = liquidacionRepository.findByFincaId(idFinca);
+        for (Liquidacion liquidacion : liquidaciones) {
+            List<LineaLiquidacion> lineasLiquidacion = lineaLiquidacionRepository.findByLiquidacionId(liquidacion.getId());
+            lineaLiquidacionRepository.deleteAll(lineasLiquidacion);
+            liquidacionRepository.delete(liquidacion);
+        }
+
+        Finca finca = fincaRepository.findById(idFinca)
+            .orElseThrow(() -> new RuntimeException("Finca no encontrada"));
+
+        fincaRepository.delete(finca);
+
+        return ResponseEntity.ok(new MessageResponse("Se ha eliminado la finca correctamente"));
+    }
 }

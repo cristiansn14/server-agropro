@@ -22,6 +22,9 @@ public interface ParcelaRepository extends JpaRepository<Parcela, String> {
     @Query("SELECT COALESCE(SUM(p.superficie), 0) FROM Parcela p WHERE p.finca.id = :fincaId")
     BigDecimal sumSuperficieByFincaId(@Param("fincaId") UUID fincaId);
 
+    @Query("SELECT p FROM Parcela p WHERE p.finca.id = :fincaId AND p.fechaBaja IS NULL")
+    List<Parcela> findParcelasAltaByFincaId(@Param("fincaId") UUID fincaId);
+
     @Query("SELECT p FROM Parcela p WHERE p.finca.id = :fincaId AND p.fechaBaja IS NOT NULL")
     List<Parcela> findParcelasBajaByFincaId(@Param("fincaId") UUID fincaId);
 
