@@ -21,9 +21,8 @@ public interface FincaRepository extends JpaRepository<Finca, UUID> {
 
     Optional<Finca> findByNombre(String nombre);
 
-    @Query("SELECT f FROM Finca f WHERE EXISTS (" +
-           "SELECT uf FROM UsuarioFinca uf WHERE uf.finca = f AND uf.usuario.id = :usuarioId AND uf.fechaBaja IS NULL AND " +
-           "(uf.rol.rol = 'SUPERUSUARIO' OR uf.rol.rol <> 'SUPERUSUARIO'))")
+    @Query("SELECT f FROM Finca f WHERE f.fechaBaja IS NULL AND EXISTS (" +
+       "SELECT uf FROM UsuarioFinca uf WHERE uf.finca = f AND uf.usuario.id = :usuarioId AND uf.fechaBaja IS NULL) ")
     List<Finca> findByUsuarioId(@Param("usuarioId") UUID usuarioId);
 
     @Query("SELECT f FROM Finca f WHERE f.fechaBaja IS NULL AND EXISTS (" +

@@ -91,6 +91,11 @@ public class FincaController {
         return fincaService.findUsuariosFincaByFincaId(idFinca);
     }
 
+    @GetMapping("/findUsuariosFincaBajaByFincaId/{idFinca}")
+    public ResponseEntity<?> findUsuariosFincaBajaByFincaId(@PathVariable UUID idFinca) {
+        return fincaService.findUsuariosFincaBajaByFincaId(idFinca);
+    }
+
     @GetMapping("/findUsuarioFincaById/{idUsuarioFinca}")
     public ResponseEntity<?> findUsuarioFincaById(@PathVariable UUID idUsuarioFinca) {
         return fincaService.findUsuarioFincaById(idUsuarioFinca);

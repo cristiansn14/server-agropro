@@ -229,14 +229,17 @@ public class UsuarioService {
                 usuario.setNombre(usuarioRequestDto.getNombre());
                 actU = true;
             }
+
             if (!usuarioRequestDto.getApellido1().isBlank() && !usuarioRequestDto.getApellido1().equals(usuario.getApellido1())) {
                 usuario.setApellido1(usuarioRequestDto.getApellido1());
                 actU = true;
             }
+
             if (!usuarioRequestDto.getApellido2().isBlank() && !usuarioRequestDto.getApellido2().equals(usuario.getApellido2())) {
                 usuario.setApellido2(usuarioRequestDto.getApellido2());
                 actU = true;
             }
+            
             if (!usuarioRequestDto.getUsername().isBlank() && !usuarioRequestDto.getUsername().equals(usuario.getUsername())) {
                 if (usuarioRepository.existsByUsername(usuarioRequestDto.getUsername())) {
                     return ResponseEntity.badRequest().body(new MessageResponse("Error, el nombre de usuario ya existe."));
@@ -244,6 +247,7 @@ public class UsuarioService {
                 usuario.setUsername(usuarioRequestDto.getUsername());
                 actU = true;       
             }
+
             if (!usuarioRequestDto.getEmail().isBlank() && !usuarioRequestDto.getEmail().equals(usuario.getEmail())) {
                 if (usuarioRepository.existsByEmail(usuarioRequestDto.getEmail())) {
                     return ResponseEntity.badRequest().body(new MessageResponse("Error, el email ya esta registrado."));
@@ -251,22 +255,57 @@ public class UsuarioService {
                 usuario.setEmail(usuarioRequestDto.getEmail());
                 actU = true;
             }
-            if (!usuarioRequestDto.getDni().equals(usuario.getDni())) {
-                usuario.setDni(usuarioRequestDto.getDni());
+
+            if (usuarioRequestDto.getDni() != null) {
+                if (!usuarioRequestDto.getDni().equals(usuario.getDni())) {
+                    usuario.setDni(usuarioRequestDto.getDni());
+                    actU = true;
+                }
+            } else if (usuario.getDni() != null) {
+                usuario.setDni(null);
                 actU = true;
             }
-            if (!usuarioRequestDto.getTelefono().equals(usuario.getTelefono())) {
-                usuario.setTelefono(usuarioRequestDto.getTelefono());
+
+            if (usuarioRequestDto.getTelefono() != null) {
+                if (!usuarioRequestDto.getTelefono().equals(usuario.getTelefono())) {
+                    usuario.setTelefono(usuarioRequestDto.getTelefono());
+                    actU = true;
+                }
+            } else if (usuario.getTelefono() != null) {
+                usuario.setTelefono(null);
+                actU = true;
+            }           
+
+            if (usuarioRequestDto.getDireccion() != null) {
+                if (!usuarioRequestDto.getDireccion().equals(usuario.getDireccion())) {
+                    usuario.setDireccion(usuarioRequestDto.getDireccion());
+                    actU = true;
+                }
+            } else if (usuario.getDireccion() != null) {
+                usuario.setDireccion(null);
+                actU = true;
+            }           
+
+            if (usuarioRequestDto.getCodigoPostal() != null) {
+                if (!usuarioRequestDto.getCodigoPostal().equals(usuario.getCodigoPostal())) {
+                    usuario.setCodigoPostal(usuarioRequestDto.getCodigoPostal());
+                    actU = true;
+                }
+            } else if (usuario.getCodigoPostal() != null) {
+                usuario.setCodigoPostal(null);
                 actU = true;
             }
-            if (!usuarioRequestDto.getDireccion().equals(usuario.getDireccion())) {
-                usuario.setDireccion(usuarioRequestDto.getDireccion());
+
+            if (usuarioRequestDto.getCuenta() != null) {
+                if (!usuarioRequestDto.getCuenta().equals(usuario.getCuenta())) {
+                    usuario.setCuenta(usuarioRequestDto.getCuenta());
+                    actU = true;
+                }
+            } else if (usuario.getCuenta() != null) {
+                usuario.setCuenta(null);
                 actU = true;
             }
-            if (!usuarioRequestDto.getCodigoPostal().equals(usuario.getCodigoPostal())) {
-                usuario.setCodigoPostal(usuarioRequestDto.getCodigoPostal());
-                actU = true;
-            }
+            
             if (usuarioRequestDto.getComunidad() != null) {
                 Comunidad comunidad = comunidadRepository.findById(usuarioRequestDto.getComunidad())
                     .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
@@ -275,6 +314,7 @@ public class UsuarioService {
                     actU = true;
                 }               
             }
+
             if (usuarioRequestDto.getProvincia() != null) {
                 Provincia provincia = provinciaRepository.findById(usuarioRequestDto.getProvincia())
                     .orElseThrow(() -> new RuntimeException("Provincia no encontrada"));
@@ -283,6 +323,7 @@ public class UsuarioService {
                     actU = true;
                 }               
             }
+
             if (usuarioRequestDto.getMunicipio() != null) {
                 Municipio municipio = municipioRepository.findById(usuarioRequestDto.getMunicipio())
                     .orElseThrow(() -> new RuntimeException("Municipio no encontrado"));
@@ -291,6 +332,7 @@ public class UsuarioService {
                     actU = true;
                 }               
             }
+
             if (foto != null && !foto.isEmpty()) {
                 try {
                     byte[] data = foto.getBytes();
@@ -299,7 +341,9 @@ public class UsuarioService {
                                 .type(foto.getContentType())
                                 .data(ImageUtils.compressImage(data))
                                 .build();
-                    archivoRepository.delete(usuario.getFoto());        
+                    if (usuario.getFoto() != null) {
+                        archivoRepository.delete(usuario.getFoto());
+                    }        
                     usuario.setFoto(archivo);
                     archivoRepository.save(archivo);
                     actU = true;
@@ -308,6 +352,7 @@ public class UsuarioService {
                     throw new RuntimeException("Error al procesar la imagen", e);
                 }
             }
+
             if (actU) {
                 usuarioRepository.save(usuario);
                 return ResponseEntity.ok(new MessageResponse("El usuario " + usuario.getUsername() + " se ha modificado correctamente"));

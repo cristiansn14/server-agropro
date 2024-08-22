@@ -68,7 +68,7 @@ public interface UsuarioParcelaRepository extends JpaRepository<UsuarioParcela, 
 
     UsuarioParcela findByUsuarioIdAndParcelaConstruccionReferenciaCatastral (UUID idUsuario, String referenciaCatastral);
 
-    List<UsuarioParcela> findByParcelaReferenciaCatastral (@Param("referenciaCatastral")String referenciaCatastral);
+    List<UsuarioParcela> findByParcelaReferenciaCatastral (String referenciaCatastral);
 
     List<UsuarioParcela> findByParcelaConstruccionReferenciaCatastral (String referenciaCatastral);
 }

@@ -128,8 +128,8 @@ public class FincaService {
     @Transactional
     public ResponseEntity<?> getParcelasByIdFinca(UUID idFinca) {
         
-        List<Parcela> parcelas = parcelaRepository.findByFincaId(idFinca);
-        List<ParcelaConstruccion> parcelasConstruccion = parcelaConstruccionRepository.findByFincaId(idFinca);
+        List<Parcela> parcelas = parcelaRepository.findParcelasAltaByFincaId(idFinca);
+        List<ParcelaConstruccion> parcelasConstruccion = parcelaConstruccionRepository.findParcelasAltaByFincaId(idFinca);
         List<String> referenciaParcelas = new ArrayList<>();
 
         if(!parcelas.isEmpty()){           
@@ -477,6 +477,32 @@ public class FincaService {
     }
 
     @Transactional
+    public ResponseEntity<?> findUsuariosFincaBajaByFincaId (UUID idFinca) {
+
+        List<UsuarioFinca> usuariosFinca = usuarioFincaRepository.findUsuariosFincaBajaByFincaId(idFinca);
+        List<UsuarioFincaInfo> usuariosFincaInfo = new ArrayList<>();
+
+        for (UsuarioFinca usuarioFinca : usuariosFinca) {
+            UsuarioFincaInfo usuarioFincaInfo = new UsuarioFincaInfo(
+                usuarioFinca.getId(),
+                usuarioFinca.getOnzas(),                
+                usuarioFinca.getUsuario().getNombre(),
+                usuarioFinca.getUsuario().getApellido1(),
+                usuarioFinca.getUsuario().getApellido2(),
+                usuarioFinca.getRol().getRol().toString(),
+                usuarioFinca.getUsuario().getId(),
+                usuarioFinca.getFechaAlta(),
+                usuarioFinca.getFechaModificacion(),
+                usuarioFinca.getFechaBaja()
+            );
+
+            usuariosFincaInfo.add(usuarioFincaInfo);
+        }
+
+        return ResponseEntity.ok(usuariosFincaInfo);
+    }
+
+    @Transactional
     public ResponseEntity<?> findUsuarioFincaById (UUID idUsuarioFinca) {
         
         UsuarioFinca usuarioFinca = usuarioFincaRepository.findById(idUsuarioFinca)
@@ -683,7 +709,7 @@ public class FincaService {
     @Transactional
     public ResponseEntity<?> eliminarFinca (UUID idFinca) {
 
-        List<Parcela> parcelas = parcelaRepository.findParcelasAltaByFincaId(idFinca);
+        List<Parcela> parcelas = parcelaRepository.findByFincaId(idFinca);
                        
         if (!parcelas.isEmpty()) {
             for (Parcela parcela : parcelas) {
@@ -698,7 +724,7 @@ public class FincaService {
             }
         }
 
-        List<ParcelaConstruccion> parcelaConstruccion = parcelaConstruccionRepository.findParcelasAltaByFincaId(idFinca);
+        List<ParcelaConstruccion> parcelaConstruccion = parcelaConstruccionRepository.findByFincaId(idFinca);
 
         if (!parcelaConstruccion.isEmpty()) {
             for (ParcelaConstruccion parcela : parcelaConstruccion) {
@@ -710,15 +736,10 @@ public class FincaService {
             }
         }
 
-        List<UsuarioFinca> usuariosFinca = usuarioFincaRepository.findUsuariosFincaByFincaId(idFinca);
+        List<UsuarioFinca> usuariosFinca = usuarioFincaRepository.findByFincaId(idFinca);
 
         if (!usuariosFinca.isEmpty()) {
-            for (UsuarioFinca usuarioFinca : usuariosFinca) {
-                if (usuarioFinca.getFechaBaja() != null) {
-                    usuarioFinca.setFechaBaja(new Timestamp(System.currentTimeMillis()));
-                    usuarioFincaRepository.save(usuarioFinca);
-                }   
-            }
+            usuarioFincaRepository.deleteAll(usuariosFinca);
         }
 
         List<Archivo> archivos = archivoRepository.findByFincaId(idFinca);
