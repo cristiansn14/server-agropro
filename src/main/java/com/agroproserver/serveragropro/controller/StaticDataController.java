@@ -1,7 +1,5 @@
 package com.agroproserver.serveragropro.controller;
 
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,21 +40,6 @@ public class StaticDataController {
     @GetMapping("/findMunicipioByNombreAndProvincia/{municipio}/{provincia}")
     public ResponseEntity<?> findMunicipioByNombreAndProvincia(@PathVariable String municipio, @PathVariable String provincia) {
         return staticDataService.findMunicipioByNombreAndProvincia(municipio, provincia);
-    }
-
-    @GetMapping("/findPoligonoParcelaByFinca/{idFinca}")
-    public ResponseEntity<?> findPoligonoParcelaByFinca(@PathVariable UUID idFinca) {
-        return staticDataService.findPoligonoParcelaByFinca(idFinca);
-    }
-
-    @GetMapping("/findParajeByFinca/{idFinca}")
-    public ResponseEntity<?> findParajeByFinca(@PathVariable UUID idFinca) {
-        return staticDataService.findParajeByFinca(idFinca);
-    }
-
-    @GetMapping("/findCultivos")
-    public ResponseEntity<?> findCultivos() {
-        return staticDataService.findCultivos();
     }
 
     @GetMapping("/getNombreComunidadById/{idComunidad}")
